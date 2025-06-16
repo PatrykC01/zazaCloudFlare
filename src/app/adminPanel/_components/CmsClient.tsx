@@ -289,9 +289,9 @@ const router = useRouter();
       {editModes[sectionKey] && formRenderer ? (
         // Use dedicated form renderer if provided
         <form
-          ref={(el) => (formRefs.current[sectionKey] = el)}
-          onSubmit={(e) => handleFormSubmit(sectionKey, e)}
-        >
+  ref={(el) => { formRefs.current[sectionKey] = el; }}
+  onSubmit={(e) => handleFormSubmit(sectionKey, e)}
+>
           {formRenderer()}
           <div className="flex justify-end space-x-2 mt-4 absolute top-2 right-2">
             <SaveButton type="submit" disabled={isPending}>
