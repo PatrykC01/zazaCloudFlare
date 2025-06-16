@@ -1,96 +1,95 @@
 // src/app/auth/signin/page.tsx
-'use client'; // Ta strona wymaga interaktywności klienta
 
-import { useState } from 'react';
-import { signIn } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation'; // Importy dla App Router
+"use client";
 
-export default function SignInPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams(); // Do odczytu parametrów URL
-  const callbackUrl = searchParams.get('callbackUrl') || '/adminPanel'; // Domyślnie wracamy do panelu
-  const error = searchParams.get('error'); // Sprawdź, czy jest błąd z poprzedniej próby
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
+import Link from 'next/link';
 
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [formError, setFormError] = useState<string | null>(error ? "Nieprawidłowe dane logowania." : null); // Pokaż błąd od razu, jeśli jest w URL
+// Ten komponent zawiera całą logikę formularza logowania
+function SignInForm() {
+  const searchParams = useSearchParams();
+  const error = searchParams.get("error");
+  const callbackUrl = searchParams.get("callbackUrl") || "/adminPanel";
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setLoading(true);
-    setFormError(null); // Resetuj błąd przed próbą
-
-    try {
-      const result = await signIn('credentials', {
-        redirect: false, // Nie pozwalamy NextAuth na automatyczne przekierowanie
-        username,
-        password,
-        callbackUrl, // Przekazujemy callbackUrl, NextAuth go użyje jeśli logowanie się uda
-      });
-
-      if (result?.error) {
-        console.error('Błąd logowania:', result.error);
-        // Ustawiamy komunikat błędu na podstawie odpowiedzi
-        // Można by mapować kody błędów z `authorize` na komunikaty
-        setFormError('Nieprawidłowa nazwa użytkownika lub hasło.');
-        // Opcjonalnie: odśwież stronę z błędem w URL dla jasności
-        // router.push(`/auth/signin?error=${result.error}&callbackUrl=${encodeURIComponent(callbackUrl)}`);
-      } else if (result?.ok && result?.url) {
-        // Logowanie udane, NextAuth zwrócił URL docelowy
-        // Przekierowujemy ręcznie LUB pozwalamy na domyślne zachowanie, jeśli `redirect` byłby `true`
-        router.push(result.url); // Użyj URL zwróconego przez NextAuth
-        // lub po prostu: router.push(callbackUrl);
-      } else {
-         // Inny nieoczekiwany stan
-         setFormError('Wystąpił nieoczekiwany błąd podczas logowania.');
-      }
-    } catch (err) {
-        console.error("Wyjątek podczas signIn:", err);
-        setFormError('Wystąpił wyjątek podczas próby logowania.');
-    } finally {
-        setLoading(false);
-    }
+  const errorMessages: { [key: string]: string } = {
+    CredentialsSignin: "Nieprawidłowa nazwa użytkownika lub hasło. Spróbuj ponownie.",
+    default: "Wystąpił błąd podczas logowania.",
   };
 
+  const errorMessage = error && (errorMessages[error] || errorMessages.default);
+
   return (
-    <div>
-      <h1>Logowanie do Panelu Administratora</h1>
-      <form onSubmit={handleSubmit}>
-        {/* W App Router nie ma potrzeby ręcznego dodawania CSRF tokenu w ten sposób
-            gdy używamy `signIn`, NextAuth zajmuje się tym. */}
-        <div>
-          <label htmlFor="username">Nazwa użytkownika:</label>
-          <input
-            id="username"
-            name="username"
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            disabled={loading}
-          />
+    <div id="contact" className="form-1">
+      <div className="container">
+        <div className="row">
+          <div className="col-lg-12">
+            <h2 className="h2-heading">Panel Administratora</h2>
+            <p className="p-heading">Zaloguj się, aby zarządzać treścią strony</p>
+          </div>
         </div>
-        <div>
-          <label htmlFor="password">Hasło:</label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            disabled={loading}
-          />
+        <div className="row">
+          <div className="col-lg-10 offset-lg-1">
+            {errorMessage && (
+              <div className="alert alert-danger text-center" role="alert">
+                {errorMessage}
+              </div>
+            )}
+
+            <form
+              method="post"
+              action={`/api/auth/callback/credentials`}
+            >
+              <input name="callbackUrl" type="hidden" defaultValue={callbackUrl} />
+
+              <div className="form-group">
+                <input
+                  type="text"
+                  className="form-control-input"
+                  id="username"
+                  name="username"
+                  required
+                />
+                <label className="label-control" htmlFor="username">
+                  Nazwa użytkownika
+                </label>
+              </div>
+              <div className="form-group">
+                <input
+                  type="password"
+                  className="form-control-input"
+                  id="password"
+                  name="password"
+                  required
+                />
+                <label className="label-control" htmlFor="password">
+                  Hasło
+                </label>
+              </div>
+              <div className="form-group">
+                <button type="submit" className="form-control-submit-button">
+                  Zaloguj się
+                </button>
+              </div>
+            </form>
+             <div className="back-to-home text-center mt-4">
+                <Link href="/" legacyBehavior>
+                    <a className="text-decoration-none">Powrót na stronę główną</a>
+                </Link>
+            </div>
+          </div>
         </div>
-        {formError && (
-          <p style={{ color: 'red' }}>{formError}</p>
-        )}
-        <button type="submit" disabled={loading}>
-          {loading ? 'Logowanie...' : 'Zaloguj się'}
-        </button>
-      </form>
-      {/* Możesz dodać linki do innych metod logowania, jeśli je skonfigurujesz */}
+      </div>
     </div>
+  );
+}
+
+// Główny komponent strony, który eksportujemy
+// Używa <Suspense> do opakowania formularza
+export default function SignInPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SignInForm />
+    </Suspense>
   );
 }
