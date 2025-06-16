@@ -2,7 +2,7 @@
 
 import React from "react";
 import { getServerSession } from 'next-auth/next'; // <-- Importuj getServerSession
-import { authOptions } from '../../api/auth/[...nextauth]/route'; // <-- Importuj swoje opcje autoryzacji
+import { authOptions } from '@/lib/auth'; // <-- Importuj swoje opcje autoryzacji
 import { redirect } from 'next/navigation'; // <-- Importuj redirect dla Server Components
 import LogoutButton from '../_components/LogoutButton'; // <-- Zaimportuj komponent wylogowania (zakładając, że jest w tym samym folderze)
 
