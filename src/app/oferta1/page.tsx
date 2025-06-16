@@ -26,11 +26,10 @@ export default function Oferta() {
     fetchData();
   }, []);
 
-  const parsePrices = (priceString) => {
-    if (!priceString) return [];
-    return priceString.split(',');
-  };
-
+ const parsePrices = (priceString: string | undefined | null) => {
+  if (!priceString) return [];
+  return priceString.split(',');
+};
   const naDobyBezPaliwaPrices = parsePrices(data.NaDobyBezPaliwa);
   const naDobyZPaliwemPrices = parsePrices(data.NaDobyZPaliwem);
   const przejazdSkuteremPrices = parsePrices(data.PrzejazdSkuterem);
