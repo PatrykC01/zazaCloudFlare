@@ -1,7 +1,7 @@
 // app/cms/_actions/reservationActions.ts
 'use server';
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 
 const prisma = new PrismaClient();
@@ -201,17 +201,23 @@ export async function acceptRequest(
 
       // 3. Utwórz nową rezerwację w transakcji razem z usunięciem zapytania
       // Transakcja zapewnia, że obie operacje się powiodą lub żadna
-      await prisma.$transaction(async (tx) => {
-          // Stwórz rezerwację
-          await tx.reservation.create({
-              data: reservationData,
-          });
+     // ... wewnątrz funkcji acceptRequest
+await prisma.$transaction(async (tx) => {
+    // Stwórz rezerwację
+    await tx.reservation.create({
+        data: {
+            ...reservationData, // Rozpakuj dane z zapytania
+            // I jawnie przekonwertuj daty na ISO string
+            startDate: new Date(reservationData.startDate).toISOString(),
+            endDate: new Date(reservationData.endDate).toISOString(),
+        },
+    });
 
-          // Usuń zapytanie
-          await tx.request.delete({
-              where: { id: requestId },
-          });
-      });
+    // Usuń zapytanie
+    await tx.request.delete({
+        where: { id: requestId },
+    });
+});
 
       // 4. Revaliduj ścieżki dla obu list
       revalidatePath('/cms/reservations'); // Ścieżka do strony rezerwacji
