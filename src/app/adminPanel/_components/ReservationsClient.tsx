@@ -139,7 +139,7 @@ export default function ReservationsClient({ initialReservations }: Reservations
       // W przypadku sortowania po stronie klienta, useEffect zareaguje na zmianę sortDesc
   };
 
-  const handleApplyFilters = (filters: any) => {
+  const handleApplyFilters = (filters: string) => {
       setIsFiltered(true); // Ten stan jest, ale nie wpływa na dane w tym useEffect
       setShowFilterPanel(false);
       // Tutaj wywołasz logikę filtrowania po stronie serwera

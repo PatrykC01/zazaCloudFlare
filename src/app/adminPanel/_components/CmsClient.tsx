@@ -310,9 +310,9 @@ const router = useRouter();
         // Fallback to using contentRenderer wrapped in a form (for simple single-field edits)
         // This might need adjustments based on how you structure simple edits
         <form
-          ref={(el) => (formRefs.current[sectionKey] = el)}
-          onSubmit={(e) => handleFormSubmit(sectionKey, e)}
-        >
+  ref={(el) => { formRefs.current[sectionKey] = el; }}
+  onSubmit={(e) => handleFormSubmit(sectionKey, e)}
+>
           {contentRenderer()}{" "}
           {/* This assumes contentRenderer outputs form inputs in edit mode */}
           <div className="flex justify-end space-x-2 mt-4 absolute top-2 right-2">
