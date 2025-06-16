@@ -104,29 +104,32 @@ export default async function HomePage() {
     FooterEmail,
   } = contentData;
 
-  return (
+return (
     <>
       <Preloader />
       <Navbar />
-     <Header backgroundImageUrl={HeaderIMG || '/default-banner.jpg'} />
-      <IntroSection text={AboutP} imageUrl={AboutIMG} />
+      <Header backgroundImageUrl={HeaderIMG || '/default-banner.jpg'} />
+      <IntroSection 
+        text={AboutP || ''}
+        imageUrl={AboutIMG || '/default-about.jpg'}
+      />
       <DescriptionCards /> {/* Zakładam, że statyczne */}
       <OffersSection offers={Offers} />
       <ReservationSection
-        mapSrc={mapSrc}
-        phoneNumber={FooterPhone}
-        offerTitles={Offers.map((o: Offer) => o.title)} // Typujemy 'o' jako Offer
+        mapSrc={mapSrc || ''}                     // <-- POPRAWKA
+        phoneNumber={FooterPhone || ''}             // <-- POPRAWKA
+        offerTitles={Offers.map((o: Offer) => o.title)}
       />
       <GallerySection images={GalleryImages} videos={GalleryVideos} />
       <ContactSection
-        location={FooterLocation}
-        phone={FooterPhone}
-        email={FooterEmail}
+        location={FooterLocation || ''}           // <-- POPRAWKA
+        phone={FooterPhone || ''}                   // <-- POPRAWKA
+        email={FooterEmail || ''}                   // <-- POPRAWKA
       />
       <Footer
-        location={FooterLocation}
-        phone={FooterPhone}
-        email={FooterEmail}
+        location={FooterLocation || ''}           // <-- POPRAWKA
+        phone={FooterPhone || ''}                   // <-- POPRAWKA
+        email={FooterEmail || ''}                   // <-- POPRAWKA
       />
       <Script src="/js/scripts.js" strategy="lazyOnload" />
     </>
