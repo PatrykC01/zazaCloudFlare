@@ -1,38 +1,51 @@
 // src/app/auth/error/page.tsx
-'use client' // Możemy potrzebować `useSearchParams`
 
+"use client";
+
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
 
-export default function AuthErrorPage() {
+// Komponent z logiką wyświetlania błędu
+function ErrorDisplay() {
     const searchParams = useSearchParams();
-    const error = searchParams.get('error');
+    const error = searchParams.get('error') || 'default';
 
-    let errorMessage = "Wystąpił błąd podczas uwierzytelniania.";
+    const errorDetails: { [key: string]: { title: string, message: string } } = {
+        CredentialsSignin: {
+            title: "Błąd Logowania",
+            message: "Wprowadzona nazwa użytkownika lub hasło są nieprawidłowe."
+        },
+        default: {
+            title: "Wystąpił Nieoczekiwany Błąd",
+            message: "Skontaktuj się z administratorem lub spróbuj ponownie za chwilę."
+        }
+    };
 
-    // Możesz dodać bardziej szczegółowe komunikaty na podstawie `error`
-    switch (error) {
-        case 'CredentialsSignin':
-            errorMessage = "Nieprawidłowa nazwa użytkownika lub hasło.";
-            break;
-        case 'AccessDenied':
-             errorMessage = "Nie masz uprawnień do wykonania tej akcji.";
-             break;
-        // Dodaj inne przypadki błędów NextAuth według potrzeb
-        default:
-            if (error) {
-                 errorMessage = `Błąd: ${error}`;
-            }
-            break;
-    }
+    const details = errorDetails[error] || errorDetails.default;
 
     return (
-        <div>
-            <h1>Błąd Uwierzytelniania</h1>
-            <p>{errorMessage}</p>
-            <Link href="/auth/signin">Spróbuj zalogować się ponownie</Link>
-            <br />
-            <Link href="/">Wróć na stronę główną</Link>
+        <div className="container text-center" style={{ padding: "80px 0" }}>
+            <div className="row">
+                <div className="col-lg-12">
+                    <h2 className="h2-heading">{details.title}</h2>
+                    <p className="p-heading">{details.message}</p>
+                    <p className="text-muted small">Kod błędu: {error}</p>
+                    <Link href="/auth/signin" legacyBehavior>
+                        <a className="btn-solid-lg" style={{ marginTop: '20px' }}>Spróbuj Zalogować Się Ponownie</a>
+                    </Link>
+                </div>
+            </div>
         </div>
+    );
+}
+
+
+// Główny komponent strony, opakowany w Suspense
+export default function AuthErrorPage() {
+    return (
+        <Suspense fallback={<div style={{ padding: "80px 0", textAlign: "center" }}>Loading...</div>}>
+            <ErrorDisplay />
+        </Suspense>
     );
 }
