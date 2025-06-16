@@ -12,7 +12,7 @@ import {
   deleteOfferAction,
   Offer, // Import Offer type
 } from "../_actions/contentActions";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 
 // --- UI Components (Replace with your actual UI library like Shadcn/ui or use basic HTML) ---
 const Input = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
@@ -84,8 +84,11 @@ type EditModes = {
 };
 
 export default function CmsClient({ initialContent }: CmsClientProps) {
-  console.log("CmsClient - Received initialContent:", JSON.stringify(initialContent, null, 2));
-const router = useRouter();
+  console.log(
+    "CmsClient - Received initialContent:",
+    JSON.stringify(initialContent, null, 2)
+  );
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [content, setContent] = useState<CmsContentData>(initialContent);
   const [editModes, setEditModes] = useState<EditModes>({});
@@ -148,90 +151,126 @@ const router = useRouter();
     }
 
     startTransition(async () => {
-  const result = await action(formData); // Wyślij dane na serwer
+      const result = await action(formData); // Wyślij dane na serwer
 
-  if (!result.success) {
-    alert(`Error saving section ${sectionKey}: ${result.error || "Unknown error"}`);
-  } else {
-    // SUKCES!
-    // 1. Przygotuj nowe dane do aktualizacji stanu lokalnego
-    const updatedLocalContentPart: Partial<CmsContentData> = {};
-
-    if (sectionKey === "addOffer") {
-      // Serwer powinien zwrócić dodaną ofertę lub całą listę
-      // Dla uproszczenia, jeśli serwer nie zwraca, budujemy ją z formData
-      // Lepsze byłoby, gdyby `result.data` zawierało nową ofertę lub zaktualizowaną listę
-      const newOffer: Offer = { /* ... zbuduj z formData ... */
-        img: formData.get("img") as string || "",
-        title: formData.get("title") as string || "",
-        description: formData.get("description") as string || "",
-        features: (formData.get("features") as string || "").split(',').map(f => f.trim()).filter(f => f),
-        price: formData.get("price") as string || "",
-      };
-      setContent(prev => ({
-        ...prev,
-        Offers: [...(prev.Offers || []), newOffer]
-      }));
-      form.reset();
-    } else if (sectionKey === "addMedia") {
-      // Podobnie jak z ofertami, serwer mógłby zwrócić info o dodanym medium
-      const mediaType = formData.get("mediaType") as "IMG" | "VID";
-      const mediaPath = formData.get("mediaPath") as string;
-      if (mediaType === "IMG") {
-        setContent(prev => ({ ...prev, GalleryImages: [...(prev.GalleryImages || []), mediaPath] }));
+      if (!result.success) {
+        alert(
+          `Error saving section ${sectionKey}: ${
+            result.error || "Unknown error"
+          }`
+        );
       } else {
-        setContent(prev => ({ ...prev, GalleryVideos: [...(prev.GalleryVideos || []), mediaPath] }));
-      }
-      form.reset();
-    } else {
-      // Dla updateMultipleContentAction i updateSingleContentAction (w handleSimpleSubmit)
-      // Przejdź przez formData i zaktualizuj odpowiednie pola
-      // To jest KLUCZOWE dla sekcji cenników i kontaktu, itp.
-      const newValues: Partial<CmsContentData> = {};
-      let newNaDobyBezPaliwa: string[] | undefined;
-      let newNaDobyZPaliwem: string[] | undefined;
-      let newPrzejazdSkuterem: string[] | undefined;
+        // SUKCES!
+        // 1. Przygotuj nowe dane do aktualizacji stanu lokalnego
+        const updatedLocalContentPart: Partial<CmsContentData> = {};
 
-      for (const [key, value] of formData.entries()) {
-        // Mapowanie nazw pól formularza na strukturę CmsContentData dla cenników
-        if (key.startsWith("CenaBezPaliwa")) {
-            if (!newNaDobyBezPaliwa) newNaDobyBezPaliwa = [...(content.NaDobyBezPaliwa || Array(5).fill(""))];
-            const index = parseInt(key.replace("CenaBezPaliwa", ""), 10) - 1;
-            if (index >= 0 && index < 5) newNaDobyBezPaliwa[index] = value as string;
-        } else if (key.startsWith("CenaZPaliwem")) {
-            if (!newNaDobyZPaliwem) newNaDobyZPaliwem = [...(content.NaDobyZPaliwem || Array(6).fill(""))];
-            const index = parseInt(key.replace("CenaZPaliwem", ""), 10) - 1;
-            if (index >= 0 && index < 6) newNaDobyZPaliwem[index] = value as string;
-        } else if (key.startsWith("Skuter")) {
-            if (!newPrzejazdSkuterem) newPrzejazdSkuterem = [...(content.PrzejazdSkuterem || Array(3).fill(""))];
-            const mapKeyToIndex: { [key: string]: number } = { "Skuter10min": 0, "Skuter30min": 1, "Skuter60min": 2 };
-            if (key in mapKeyToIndex) newPrzejazdSkuterem[mapKeyToIndex[key]] = value as string;
-        } else if (key === "PrzejazdPontonem") {
-            (newValues as any)[key] = value; // Proste przypisanie
+        if (sectionKey === "addOffer") {
+          // Serwer powinien zwrócić dodaną ofertę lub całą listę
+          // Dla uproszczenia, jeśli serwer nie zwraca, budujemy ją z formData
+          // Lepsze byłoby, gdyby `result.data` zawierało nową ofertę lub zaktualizowaną listę
+          const newOffer: Offer = {
+            /* ... zbuduj z formData ... */
+            img: (formData.get("img") as string) || "",
+            title: (formData.get("title") as string) || "",
+            description: (formData.get("description") as string) || "",
+            features: ((formData.get("features") as string) || "")
+              .split(",")
+              .map((f) => f.trim())
+              .filter((f) => f),
+            price: (formData.get("price") as string) || "",
+          };
+          setContent((prev) => ({
+            ...prev,
+            Offers: [...(prev.Offers || []), newOffer],
+          }));
+          form.reset();
+        } else if (sectionKey === "addMedia") {
+          // Podobnie jak z ofertami, serwer mógłby zwrócić info o dodanym medium
+          const mediaType = formData.get("mediaType") as "IMG" | "VID";
+          const mediaPath = formData.get("mediaPath") as string;
+          if (mediaType === "IMG") {
+            setContent((prev) => ({
+              ...prev,
+              GalleryImages: [...(prev.GalleryImages || []), mediaPath],
+            }));
+          } else {
+            setContent((prev) => ({
+              ...prev,
+              GalleryVideos: [...(prev.GalleryVideos || []), mediaPath],
+            }));
+          }
+          form.reset();
+        } else {
+          // Dla updateMultipleContentAction i updateSingleContentAction (w handleSimpleSubmit)
+          // Przejdź przez formData i zaktualizuj odpowiednie pola
+          // To jest KLUCZOWE dla sekcji cenników i kontaktu, itp.
+          const newValues: Partial<CmsContentData> = {};
+          let newNaDobyBezPaliwa: string[] | undefined;
+          let newNaDobyZPaliwem: string[] | undefined;
+          let newPrzejazdSkuterem: string[] | undefined;
+
+          for (const [key, value] of formData.entries()) {
+            // Mapowanie nazw pól formularza na strukturę CmsContentData dla cenników
+            if (key.startsWith("CenaBezPaliwa")) {
+              if (!newNaDobyBezPaliwa)
+                newNaDobyBezPaliwa = [
+                  ...(content.NaDobyBezPaliwa || Array(5).fill("")),
+                ];
+              const index = parseInt(key.replace("CenaBezPaliwa", ""), 10) - 1;
+              if (index >= 0 && index < 5)
+                newNaDobyBezPaliwa[index] = value as string;
+            } else if (key.startsWith("CenaZPaliwem")) {
+              if (!newNaDobyZPaliwem)
+                newNaDobyZPaliwem = [
+                  ...(content.NaDobyZPaliwem || Array(6).fill("")),
+                ];
+              const index = parseInt(key.replace("CenaZPaliwem", ""), 10) - 1;
+              if (index >= 0 && index < 6)
+                newNaDobyZPaliwem[index] = value as string;
+            } else if (key.startsWith("Skuter")) {
+              if (!newPrzejazdSkuterem)
+                newPrzejazdSkuterem = [
+                  ...(content.PrzejazdSkuterem || Array(3).fill("")),
+                ];
+              const mapKeyToIndex: { [key: string]: number } = {
+                Skuter10min: 0,
+                Skuter30min: 1,
+                Skuter60min: 2,
+              };
+              if (key in mapKeyToIndex)
+                newPrzejazdSkuterem[mapKeyToIndex[key]] = value as string;
+            } else if (key === "PrzejazdPontonem") {
+              (newValues as any)[key] = value; // Proste przypisanie
+            }
+            // Dla innych prostych pól (np. AboutP, AboutIMG, FooterLocation, HeaderIMG, Map)
+            else if (key in content) {
+              (newValues as any)[key] = value;
+            }
+          }
+          if (newNaDobyBezPaliwa)
+            newValues.NaDobyBezPaliwa = newNaDobyBezPaliwa;
+          if (newNaDobyZPaliwem) newValues.NaDobyZPaliwem = newNaDobyZPaliwem;
+          if (newPrzejazdSkuterem)
+            newValues.PrzejazdSkuterem = newPrzejazdSkuterem;
+
+          setContent((prev) => ({ ...prev, ...newValues }));
         }
-        // Dla innych prostych pól (np. AboutP, AboutIMG, FooterLocation, HeaderIMG, Map)
-        else if (key in content) {
-             (newValues as any)[key] = value;
+
+        // 2. Opcjonalne: zamknij tryb edycji
+        if (
+          editModes[sectionKey] &&
+          sectionKey !== "addOffer" &&
+          sectionKey !== "addMedia"
+        ) {
+          toggleEdit(sectionKey);
         }
+
+        alert(`Section ${sectionKey} saved successfully!`);
+
+        // 3. Odśwież dane serwerowe dla spójności i dla innych komponentów (ROUTER.REFRESH)
+        router.refresh();
       }
-      if (newNaDobyBezPaliwa) newValues.NaDobyBezPaliwa = newNaDobyBezPaliwa;
-      if (newNaDobyZPaliwem) newValues.NaDobyZPaliwem = newNaDobyZPaliwem;
-      if (newPrzejazdSkuterem) newValues.PrzejazdSkuterem = newPrzejazdSkuterem;
-
-      setContent(prev => ({ ...prev, ...newValues }));
-    }
-
-    // 2. Opcjonalne: zamknij tryb edycji
-    if (editModes[sectionKey] && sectionKey !== "addOffer" && sectionKey !== "addMedia") {
-      toggleEdit(sectionKey);
-    }
-
-    alert(`Section ${sectionKey} saved successfully!`);
-
-    // 3. Odśwież dane serwerowe dla spójności i dla innych komponentów (ROUTER.REFRESH)
-    router.refresh();
-  }
-});
+    });
   };
 
   const handleDeleteMedia = (type: "IMG" | "VID", path: string) => {
@@ -289,9 +328,11 @@ const router = useRouter();
       {editModes[sectionKey] && formRenderer ? (
         // Use dedicated form renderer if provided
         <form
-  ref={(el) => { formRefs.current[sectionKey] = el; }}
-  onSubmit={(e) => handleFormSubmit(sectionKey, e)}
->
+          ref={(el) => {
+            formRefs.current[sectionKey] = el;
+          }}
+          onSubmit={(e) => handleFormSubmit(sectionKey, e)}
+        >
           {formRenderer()}
           <div className="flex justify-end space-x-2 mt-4 absolute top-2 right-2">
             <SaveButton type="submit" disabled={isPending}>
@@ -310,9 +351,11 @@ const router = useRouter();
         // Fallback to using contentRenderer wrapped in a form (for simple single-field edits)
         // This might need adjustments based on how you structure simple edits
         <form
-  ref={(el) => { formRefs.current[sectionKey] = el; }}
-  onSubmit={(e) => handleFormSubmit(sectionKey, e)}
->
+          ref={(el) => {
+            formRefs.current[sectionKey] = el;
+          }}
+          onSubmit={(e) => handleFormSubmit(sectionKey, e)}
+        >
           {contentRenderer()}{" "}
           {/* This assumes contentRenderer outputs form inputs in edit mode */}
           <div className="flex justify-end space-x-2 mt-4 absolute top-2 right-2">
@@ -352,7 +395,6 @@ const router = useRouter();
       <h1 className="text-2xl font-bold mb-6">
         CMS - Zarządzanie Treścią Strony
       </h1>
-
       {/* --- Banner Section --- */}
       {renderSection(
         "Baner",
@@ -373,8 +415,7 @@ const router = useRouter();
           )
         // No dedicated form renderer needed here if using the default submit logic
       )}
-
-                  {/* --- About Section --- */}
+      {/* --- About Section --- */}
       {renderSection(
         "O Nas",
         "About",
@@ -382,7 +423,9 @@ const router = useRouter();
         () => (
           <div className="flex flex-col md:flex-row gap-4">
             <div className="md:w-1/2">
-              <p className="text-gray-700 whitespace-pre-wrap">{content.AboutP || "Brak opisu."}</p>
+              <p className="text-gray-700 whitespace-pre-wrap">
+                {content.AboutP || "Brak opisu."}
+              </p>
             </div>
             <div className="md:w-1/2">
               {content.AboutIMG ? (
@@ -411,7 +454,7 @@ const router = useRouter();
               <Input
                 id="AboutIMG"
                 name="AboutIMG"
-                 // TUTAJ: Pobiera wartość z aktualnego stanu 'content' przy renderowaniu formularza
+                // TUTAJ: Pobiera wartość z aktualnego stanu 'content' przy renderowaniu formularza
                 defaultValue={content.AboutIMG || ""}
                 placeholder="Image URL/Path"
               />
@@ -419,7 +462,6 @@ const router = useRouter();
           </div>
         )
       )}
-
       {/* --- Offers Section --- */}
       <div className="border shadow-lg p-4 my-4 bg-gray-50">
         <h2 className="text-xl font-semibold border-b mb-4 pb-2">Oferta</h2>
@@ -456,7 +498,9 @@ const router = useRouter();
         {/* Add New Offer Form */}
         <h3 className="text-lg font-semibold mt-6 mb-2">Dodaj Nową Ofertę</h3>
         <form
-          ref={(el) => (formRefs.current["addOffer"] = el)}
+          ref={(el) => {
+            formRefs.current["addOffer"] = el;
+          }}
           onSubmit={(e) => handleFormSubmit("addOffer", e)}
           className="border p-4 bg-white rounded grid grid-cols-1 md:grid-cols-2 gap-4"
         >
@@ -487,7 +531,6 @@ const router = useRouter();
           </div>
         </form>
       </div>
-
       {/* --- Map Section --- */}
       {renderSection("Mapa", "Map", () =>
         editModes.Map ? (
@@ -511,38 +554,41 @@ const router = useRouter();
           <p className="text-gray-500">Mapa nie została skonfigurowana.</p>
         )
       )}
-
       {/* --- Gallery Section --- */}
-      <div className="border shadow-lg p-4 my-4 bg-gray-50"> {/* Początek JEDYNEJ sekcji Galerii */}
+      <div className="border shadow-lg p-4 my-4 bg-gray-50">
+        {" "}
+        {/* Początek JEDYNEJ sekcji Galerii */}
         <h2 className="text-xl font-semibold border-b mb-4 pb-2">Galeria</h2>
-
         {/* Display Images */}
         <h3 className="text-lg font-semibold mb-2">Zdjęcia</h3>
         <div className="CmsgalleryContainer cms-gallery">
-  {(content.GalleryImages || []).map((img, index) => (
-    <div key={`img-${index}`} className="CmsgalleryImg"> {/* Klasy w-24, h-24, relative są teraz w CSS */}
-      <img
-        src={img || "/placeholder.jpg"}
-        alt={`Gallery Image ${index + 1}`}
-         className="rounded" /* Klasy pozycjonowania, rozmiaru i object-fit są w CSS, zostawiamy tylko rounded */
-      />
-      <DangerButton
-         onClick={() => handleDeleteMedia("IMG", img)}
-         // Klasy pozycjonowania i z-index są w CSS, zostawiamy tylko wygląd
-         className="px-3 py-1 text-xs ..." /* Itp. */
-         disabled={isPending}
-      >
-        X
-      </DangerButton>
-    </div>
-  ))}
-</div>
-
+          {(content.GalleryImages || []).map((img, index) => (
+            <div key={`img-${index}`} className="CmsgalleryImg">
+              {" "}
+              {/* Klasy w-24, h-24, relative są teraz w CSS */}
+              <img
+                src={img || "/placeholder.jpg"}
+                alt={`Gallery Image ${index + 1}`}
+                className="rounded" /* Klasy pozycjonowania, rozmiaru i object-fit są w CSS, zostawiamy tylko rounded */
+              />
+              <DangerButton
+                onClick={() => handleDeleteMedia("IMG", img)}
+                // Klasy pozycjonowania i z-index są w CSS, zostawiamy tylko wygląd
+                className="px-3 py-1 text-xs ..." /* Itp. */
+                disabled={isPending}
+              >
+                X
+              </DangerButton>
+            </div>
+          ))}
+        </div>
         {/* Display Videos */}
         <h3 className="text-lg font-semibold mb-2">Wideo</h3>
         <div className="CmsgalleryContainer cms-gallery">
           {(content.GalleryVideos || []).map((vid, index) => (
-            <div key={`vid-${index}`} className="relative CmsgalleryVid"> {/* Klasy w-24, h-24, relative są teraz w CSS */}
+            <div key={`vid-${index}`} className="relative CmsgalleryVid">
+              {" "}
+              {/* Klasy w-24, h-24, relative są teraz w CSS */}
               <video
                 controls
                 src={vid}
@@ -563,12 +609,14 @@ const router = useRouter();
           {(!content.GalleryVideos || content.GalleryVideos.length === 0) && (
             <p className="text-gray-500 col-span-full">Brak wideo w galerii.</p>
           )}
-        </div> {/* Koniec siatki wideo */}
-
+        </div>{" "}
+        {/* Koniec siatki wideo */}
         {/* Add New Media Form */}
         <h3 className="text-lg font-semibold mt-6 mb-2">Dodaj Media</h3>
         <form
-          ref={(el) => (formRefs.current["addMedia"] = el)}
+          ref={(el) => {
+            formRefs.current["addMedia"] = el;
+          }}
           onSubmit={(e) => handleFormSubmit("addMedia", e)}
           className="border p-4 bg-white rounded flex flex-col md:flex-row gap-4 items-end"
         >
@@ -592,17 +640,19 @@ const router = useRouter();
               {isPending ? "Dodawanie..." : "Dodaj Media"}
             </SuccessButton>
           </div>
-        </form> {/* Koniec formularza */}
-
-      </div> {/* Koniec JEDYNEJ sekcji Galerii */}
-
-            {/* --- Contact Section --- */}
-            {renderSection(
+        </form>{" "}
+        {/* Koniec formularza */}
+      </div>{" "}
+      {/* Koniec JEDYNEJ sekcji Galerii */}
+      {/* --- Contact Section --- */}
+      {renderSection(
         "Kontakt",
         "Contact",
         // Content Renderer (View Mode)
         () => (
-          <div className="space-y-2 text-sm text-gray-700"> {/* Dodano style dla tekstu */}
+          <div className="space-y-2 text-sm text-gray-700">
+            {" "}
+            {/* Dodano style dla tekstu */}
             <p>
               <span className="font-semibold">Adres:</span>{" "}
               {content.FooterLocation || "Nie podano"}
@@ -610,7 +660,10 @@ const router = useRouter();
             <p>
               <span className="font-semibold">Telefon:</span>{" "}
               {content.FooterPhone ? (
-                <a href={`tel:${content.FooterPhone.replace(/\s/g, '')}`} className="text-blue-600 hover:underline">
+                <a
+                  href={`tel:${content.FooterPhone.replace(/\s/g, "")}`}
+                  className="text-blue-600 hover:underline"
+                >
                   {content.FooterPhone}
                 </a>
               ) : (
@@ -620,11 +673,14 @@ const router = useRouter();
             <p>
               <span className="font-semibold">Email:</span>{" "}
               {content.FooterEmail ? (
-                 <a href={`mailto:${content.FooterEmail}`} className="text-blue-600 hover:underline">
-                   {content.FooterEmail}
-                 </a>
+                <a
+                  href={`mailto:${content.FooterEmail}`}
+                  className="text-blue-600 hover:underline"
+                >
+                  {content.FooterEmail}
+                </a>
               ) : (
-                 "Nie podano"
+                "Nie podano"
               )}
             </p>
           </div>
@@ -648,7 +704,7 @@ const router = useRouter();
                 name="FooterPhone" // Klucz z contentActions
                 defaultValue={content.FooterPhone || ""}
                 type="tel"
-                 placeholder="np. +48 123 456 789"
+                placeholder="np. +48 123 456 789"
               />
             </div>
             <div>
@@ -658,15 +714,13 @@ const router = useRouter();
                 name="FooterEmail" // Klucz z contentActions
                 defaultValue={content.FooterEmail || ""}
                 type="email"
-                 placeholder="np. kontakt@example.com"
+                placeholder="np. kontakt@example.com"
               />
             </div>
           </div>
         )
       )}
-
-            {/* --- Pricing Sections --- */}
-
+      {/* --- Pricing Sections --- */}
       {/* 1. Cennik - Wynajem na doby (bez paliwa) */}
       {renderSection(
         "Cennik - Wynajem na doby (bez paliwa)",
@@ -676,30 +730,44 @@ const router = useRouter();
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="bg-gray-100">
-                <th className="border p-2 text-left font-semibold">Okres wynajmu</th>
-                <th className="border p-2 text-left font-semibold">Cena wynajmu</th>
+                <th className="border p-2 text-left font-semibold">
+                  Okres wynajmu
+                </th>
+                <th className="border p-2 text-left font-semibold">
+                  Cena wynajmu
+                </th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td className="border p-2">0,5 dnia (6 godzin)</td>
-                <td className="border p-2">{content.NaDobyBezPaliwa?.[0] || "-"}</td>
+                <td className="border p-2">
+                  {content.NaDobyBezPaliwa?.[0] || "-"}
+                </td>
               </tr>
               <tr>
                 <td className="border p-2">1 doba</td>
-                <td className="border p-2">{content.NaDobyBezPaliwa?.[1] || "-"}</td>
+                <td className="border p-2">
+                  {content.NaDobyBezPaliwa?.[1] || "-"}
+                </td>
               </tr>
               <tr>
                 <td className="border p-2">2 dni</td>
-                <td className="border p-2">{content.NaDobyBezPaliwa?.[2] || "-"}</td>
+                <td className="border p-2">
+                  {content.NaDobyBezPaliwa?.[2] || "-"}
+                </td>
               </tr>
               <tr>
                 <td className="border p-2">3 dni</td>
-                <td className="border p-2">{content.NaDobyBezPaliwa?.[3] || "-"}</td>
+                <td className="border p-2">
+                  {content.NaDobyBezPaliwa?.[3] || "-"}
+                </td>
               </tr>
               <tr>
                 <td className="border p-2">Dłuższy okres</td>
-                <td className="border p-2">{content.NaDobyBezPaliwa?.[4] || "-"}</td>
+                <td className="border p-2">
+                  {content.NaDobyBezPaliwa?.[4] || "-"}
+                </td>
               </tr>
             </tbody>
           </table>
@@ -719,7 +787,11 @@ const router = useRouter();
                 <td className="border p-2">
                   <Input
                     name="CenaBezPaliwa1" // Klucz z contentActions
-                    defaultValue={getPriceValue(content.NaDobyBezPaliwa, 0, "PricingBezPaliwa")}
+                    defaultValue={getPriceValue(
+                      content.NaDobyBezPaliwa,
+                      0,
+                      "PricingBezPaliwa"
+                    )}
                     placeholder="np. 500 PLN"
                   />
                 </td>
@@ -729,7 +801,11 @@ const router = useRouter();
                 <td className="border p-2">
                   <Input
                     name="CenaBezPaliwa2"
-                    defaultValue={getPriceValue(content.NaDobyBezPaliwa, 1, "PricingBezPaliwa")}
+                    defaultValue={getPriceValue(
+                      content.NaDobyBezPaliwa,
+                      1,
+                      "PricingBezPaliwa"
+                    )}
                     placeholder="np. 800 PLN"
                   />
                 </td>
@@ -739,7 +815,11 @@ const router = useRouter();
                 <td className="border p-2">
                   <Input
                     name="CenaBezPaliwa3"
-                    defaultValue={getPriceValue(content.NaDobyBezPaliwa, 2, "PricingBezPaliwa")}
+                    defaultValue={getPriceValue(
+                      content.NaDobyBezPaliwa,
+                      2,
+                      "PricingBezPaliwa"
+                    )}
                     placeholder="np. 1500 PLN"
                   />
                 </td>
@@ -749,7 +829,11 @@ const router = useRouter();
                 <td className="border p-2">
                   <Input
                     name="CenaBezPaliwa4"
-                    defaultValue={getPriceValue(content.NaDobyBezPaliwa, 3, "PricingBezPaliwa")}
+                    defaultValue={getPriceValue(
+                      content.NaDobyBezPaliwa,
+                      3,
+                      "PricingBezPaliwa"
+                    )}
                     placeholder="np. 2100 PLN"
                   />
                 </td>
@@ -759,7 +843,11 @@ const router = useRouter();
                 <td className="border p-2">
                   <Input
                     name="CenaBezPaliwa5"
-                    defaultValue={getPriceValue(content.NaDobyBezPaliwa, 4, "PricingBezPaliwa")}
+                    defaultValue={getPriceValue(
+                      content.NaDobyBezPaliwa,
+                      4,
+                      "PricingBezPaliwa"
+                    )}
                     placeholder="Ustalane indywidualnie"
                   />
                 </td>
@@ -768,36 +856,47 @@ const router = useRouter();
           </table>
         )
       )}
-
       {/* 2. Cennik - Wynajem na doby (z paliwem) Pn-Pt */}
       {renderSection(
         "Cennik - Wynajem na doby (z paliwem) Pn-Pt",
         "PricingZPaliwemPnPt",
-         // Content Renderer (View Mode)
+        // Content Renderer (View Mode)
         () => (
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="bg-gray-100">
-                <th className="border p-2 text-left font-semibold">Okres wynajmu</th>
-                <th className="border p-2 text-left font-semibold">Cena wynajmu</th>
-                <th className="border p-2 text-left font-semibold">Limit mth</th>
+                <th className="border p-2 text-left font-semibold">
+                  Okres wynajmu
+                </th>
+                <th className="border p-2 text-left font-semibold">
+                  Cena wynajmu
+                </th>
+                <th className="border p-2 text-left font-semibold">
+                  Limit mth
+                </th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td className="border p-2">3 godziny</td>
-                <td className="border p-2">{content.NaDobyZPaliwem?.[0] || "-"}</td>
+                <td className="border p-2">
+                  {content.NaDobyZPaliwem?.[0] || "-"}
+                </td>
                 <td className="border p-2">1</td>
               </tr>
               <tr>
                 <td className="border p-2">6 godzin</td>
-                <td className="border p-2">{content.NaDobyZPaliwem?.[1] || "-"}</td>
-                 <td className="border p-2">2</td>
+                <td className="border p-2">
+                  {content.NaDobyZPaliwem?.[1] || "-"}
+                </td>
+                <td className="border p-2">2</td>
               </tr>
               <tr>
                 <td className="border p-2">12 godzin</td>
-                <td className="border p-2">{content.NaDobyZPaliwem?.[2] || "-"}</td>
-                 <td className="border p-2">3</td>
+                <td className="border p-2">
+                  {content.NaDobyZPaliwem?.[2] || "-"}
+                </td>
+                <td className="border p-2">3</td>
               </tr>
             </tbody>
           </table>
@@ -818,7 +917,11 @@ const router = useRouter();
                 <td className="border p-2">
                   <Input
                     name="CenaZPaliwem1" // Klucz z contentActions
-                    defaultValue={getPriceValue(content.NaDobyZPaliwem, 0, "PricingZPaliwemPnPt")}
+                    defaultValue={getPriceValue(
+                      content.NaDobyZPaliwem,
+                      0,
+                      "PricingZPaliwemPnPt"
+                    )}
                     placeholder="np. 600 PLN"
                   />
                 </td>
@@ -829,7 +932,11 @@ const router = useRouter();
                 <td className="border p-2">
                   <Input
                     name="CenaZPaliwem2"
-                    defaultValue={getPriceValue(content.NaDobyZPaliwem, 1, "PricingZPaliwemPnPt")}
+                    defaultValue={getPriceValue(
+                      content.NaDobyZPaliwem,
+                      1,
+                      "PricingZPaliwemPnPt"
+                    )}
                     placeholder="np. 1000 PLN"
                   />
                 </td>
@@ -840,7 +947,11 @@ const router = useRouter();
                 <td className="border p-2">
                   <Input
                     name="CenaZPaliwem3"
-                    defaultValue={getPriceValue(content.NaDobyZPaliwem, 2, "PricingZPaliwemPnPt")}
+                    defaultValue={getPriceValue(
+                      content.NaDobyZPaliwem,
+                      2,
+                      "PricingZPaliwemPnPt"
+                    )}
                     placeholder="np. 1800 PLN"
                   />
                 </td>
@@ -850,35 +961,46 @@ const router = useRouter();
           </table>
         )
       )}
-
       {/* 3. Cennik - Wynajem na doby (z paliwem) Sb-Nd */}
       {renderSection(
         "Cennik - Wynajem na doby (z paliwem) Sb-Nd",
         "PricingZPaliwemSbNd",
-         // Content Renderer (View Mode)
+        // Content Renderer (View Mode)
         () => (
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="bg-gray-100">
-                <th className="border p-2 text-left font-semibold">Okres wynajmu</th>
-                <th className="border p-2 text-left font-semibold">Cena wynajmu</th>
-                <th className="border p-2 text-left font-semibold">Limit mth</th>
+                <th className="border p-2 text-left font-semibold">
+                  Okres wynajmu
+                </th>
+                <th className="border p-2 text-left font-semibold">
+                  Cena wynajmu
+                </th>
+                <th className="border p-2 text-left font-semibold">
+                  Limit mth
+                </th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td className="border p-2">3 godziny</td>
-                <td className="border p-2">{content.NaDobyZPaliwem?.[3] || "-"}</td>
+                <td className="border p-2">
+                  {content.NaDobyZPaliwem?.[3] || "-"}
+                </td>
                 <td className="border p-2">1</td>
               </tr>
               <tr>
                 <td className="border p-2">6 godzin</td>
-                <td className="border p-2">{content.NaDobyZPaliwem?.[4] || "-"}</td>
+                <td className="border p-2">
+                  {content.NaDobyZPaliwem?.[4] || "-"}
+                </td>
                 <td className="border p-2">2</td>
               </tr>
               <tr>
                 <td className="border p-2">12 godzin</td>
-                <td className="border p-2">{content.NaDobyZPaliwem?.[5] || "-"}</td>
+                <td className="border p-2">
+                  {content.NaDobyZPaliwem?.[5] || "-"}
+                </td>
                 <td className="border p-2">3</td>
               </tr>
             </tbody>
@@ -900,7 +1022,11 @@ const router = useRouter();
                 <td className="border p-2">
                   <Input
                     name="CenaZPaliwem4" // Klucz z contentActions
-                    defaultValue={getPriceValue(content.NaDobyZPaliwem, 3, "PricingZPaliwemSbNd")}
+                    defaultValue={getPriceValue(
+                      content.NaDobyZPaliwem,
+                      3,
+                      "PricingZPaliwemSbNd"
+                    )}
                     placeholder="np. 700 PLN"
                   />
                 </td>
@@ -911,7 +1037,11 @@ const router = useRouter();
                 <td className="border p-2">
                   <Input
                     name="CenaZPaliwem5"
-                    defaultValue={getPriceValue(content.NaDobyZPaliwem, 4, "PricingZPaliwemSbNd")}
+                    defaultValue={getPriceValue(
+                      content.NaDobyZPaliwem,
+                      4,
+                      "PricingZPaliwemSbNd"
+                    )}
                     placeholder="np. 1200 PLN"
                   />
                 </td>
@@ -922,7 +1052,11 @@ const router = useRouter();
                 <td className="border p-2">
                   <Input
                     name="CenaZPaliwem6"
-                    defaultValue={getPriceValue(content.NaDobyZPaliwem, 5, "PricingZPaliwemSbNd")}
+                    defaultValue={getPriceValue(
+                      content.NaDobyZPaliwem,
+                      5,
+                      "PricingZPaliwemSbNd"
+                    )}
                     placeholder="np. 2000 PLN"
                   />
                 </td>
@@ -932,32 +1066,41 @@ const router = useRouter();
           </table>
         )
       )}
-
       {/* 4. Cennik - Wynajem skutera (w cenie paliwo) */}
       {renderSection(
         "Cennik - Wynajem skutera (w cenie paliwo)",
         "PricingSkuter",
-         // Content Renderer (View Mode)
+        // Content Renderer (View Mode)
         () => (
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="bg-gray-100">
-                <th className="border p-2 text-left font-semibold">Czas wynajmu</th>
-                <th className="border p-2 text-left font-semibold">Cena wynajmu</th>
+                <th className="border p-2 text-left font-semibold">
+                  Czas wynajmu
+                </th>
+                <th className="border p-2 text-left font-semibold">
+                  Cena wynajmu
+                </th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td className="border p-2">10 minut</td>
-                <td className="border p-2">{content.PrzejazdSkuterem?.[0] || "-"}</td>
+                <td className="border p-2">
+                  {content.PrzejazdSkuterem?.[0] || "-"}
+                </td>
               </tr>
               <tr>
                 <td className="border p-2">30 minut</td>
-                <td className="border p-2">{content.PrzejazdSkuterem?.[1] || "-"}</td>
+                <td className="border p-2">
+                  {content.PrzejazdSkuterem?.[1] || "-"}
+                </td>
               </tr>
               <tr>
                 <td className="border p-2">1 godzina</td>
-                <td className="border p-2">{content.PrzejazdSkuterem?.[2] || "-"}</td>
+                <td className="border p-2">
+                  {content.PrzejazdSkuterem?.[2] || "-"}
+                </td>
               </tr>
             </tbody>
           </table>
@@ -965,7 +1108,7 @@ const router = useRouter();
         // Form Renderer (Edit Mode)
         () => (
           <table className="w-full border-collapse">
-             <thead>
+            <thead>
               <tr className="bg-gray-200">
                 <th className="border p-2 text-left">Czas wynajmu</th>
                 <th className="border p-2 text-left">Cena wynajmu</th>
@@ -977,7 +1120,11 @@ const router = useRouter();
                 <td className="border p-2">
                   <Input
                     name="Skuter10min" // Klucz z contentActions
-                    defaultValue={getPriceValue(content.PrzejazdSkuterem, 0, "PricingSkuter")}
+                    defaultValue={getPriceValue(
+                      content.PrzejazdSkuterem,
+                      0,
+                      "PricingSkuter"
+                    )}
                     placeholder="np. 100 PLN"
                   />
                 </td>
@@ -987,7 +1134,11 @@ const router = useRouter();
                 <td className="border p-2">
                   <Input
                     name="Skuter30min"
-                    defaultValue={getPriceValue(content.PrzejazdSkuterem, 1, "PricingSkuter")}
+                    defaultValue={getPriceValue(
+                      content.PrzejazdSkuterem,
+                      1,
+                      "PricingSkuter"
+                    )}
                     placeholder="np. 250 PLN"
                   />
                 </td>
@@ -997,7 +1148,11 @@ const router = useRouter();
                 <td className="border p-2">
                   <Input
                     name="Skuter60min"
-                    defaultValue={getPriceValue(content.PrzejazdSkuterem, 2, "PricingSkuter")}
+                    defaultValue={getPriceValue(
+                      content.PrzejazdSkuterem,
+                      2,
+                      "PricingSkuter"
+                    )}
                     placeholder="np. 400 PLN"
                   />
                 </td>
@@ -1006,24 +1161,29 @@ const router = useRouter();
           </table>
         )
       )}
-
       {/* 5. Cennik - Ponton */}
       {renderSection(
         "Cennik - Ponton",
         "PricingPonton",
-         // Content Renderer (View Mode)
+        // Content Renderer (View Mode)
         () => (
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="bg-gray-100">
-                <th className="border p-2 text-left font-semibold">Czas wynajmu</th>
-                <th className="border p-2 text-left font-semibold">Cena wynajmu</th>
+                <th className="border p-2 text-left font-semibold">
+                  Czas wynajmu
+                </th>
+                <th className="border p-2 text-left font-semibold">
+                  Cena wynajmu
+                </th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td className="border p-2">1 przejazd (10 minut)</td>
-                <td className="border p-2">{content.PrzejazdPontonem || "-"}</td>
+                <td className="border p-2">
+                  {content.PrzejazdPontonem || "-"}
+                </td>
               </tr>
             </tbody>
           </table>
