@@ -7,14 +7,14 @@ import { z } from "zod";
 
 // Define types for Offer and structured data (adjust if needed)
 export type OfferFeature = string;
-export type Offer = {
+export interface Offer {
   img: string;
   title: string;
   description: string;
-  features: OfferFeature[];
+  features: string[];
   price: string;
-};
-
+  offerLink?: string; // <-- DODAJ TĘ LINIĘ
+}
 const prisma = new PrismaClient();
 
 // --- Helper function to update or create content ---

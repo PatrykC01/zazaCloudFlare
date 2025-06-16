@@ -8,9 +8,10 @@ export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
-      credentials: {
-        /* ... twoje pola credentials ... */
-      },
+       credentials: {
+      username: { label: "Username", type: "text" },
+      password: { label: "Password", type: "password" }
+    },
       async authorize(credentials, req) {
         console.log("--- Authorize Function Start ---");
         console.log("Credentials received:", {
