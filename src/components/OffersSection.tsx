@@ -13,7 +13,7 @@ interface Offer {
   description: string;
   features: string[];
   price: string;
-  offerLink: string;
+  offerLink?: string;
 }
 interface OffersSectionProps {
   offers: Offer[];
