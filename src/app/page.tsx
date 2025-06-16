@@ -108,7 +108,7 @@ export default async function HomePage() {
     <>
       <Preloader />
       <Navbar />
-      <Header backgroundImageUrl={HeaderIMG} />
+     <Header backgroundImageUrl={HeaderIMG || '/default-banner.jpg'} />
       <IntroSection text={AboutP} imageUrl={AboutIMG} />
       <DescriptionCards /> {/* Zakładam, że statyczne */}
       <OffersSection offers={Offers} />
