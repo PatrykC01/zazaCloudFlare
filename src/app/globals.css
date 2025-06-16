@@ -1,4 +1,4 @@
-@import "tailwindcss";
+/* @import "tailwindcss";
 
 :root {
   --background: #ffffff;
@@ -23,4 +23,35 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+} */
+
+/* globals.css */
+
+/* Upewnij się, że ten plik jest importowany PO Bootstrapie */
+
+.cms-gallery > div { /* Celujemy w div bezpośrednio w siatce galerii */
+  width: 6rem; /* Odpowiednik w-24 */
+  height: 6rem; /* Odpowiednik h-24 */
+  position: relative; /* Konieczne dla przycisku */
+  overflow: hidden; /* Dodatkowe zabezpieczenie */
+}
+
+.cms-gallery > div > img, video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Odpowiednik object-cover */
+  /* Możesz dodać border-radius, jeśli klasa rounded nie działa */
+  /* border-radius: 0.375rem; */ /* Odpowiednik rounded-md */
+}
+
+.cms-gallery > div > button {
+  position: absolute;
+  top: 0.25rem; /* Odpowiednik top-1 */
+  left: 0.25rem; /* Odpowiednik left-1 */
+  z-index: 10;
+  /* Tutaj możesz użyć klas Tailwind dla wyglądu przycisku LUB
+     zdefiniować jego wygląd w CSS */
 }
