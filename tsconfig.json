@@ -28,6 +28,6 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "src/app/adminPanel/(pages)/reservations"
-  ],
+, "next.config.mjs"  ],
   "exclude": ["node_modules"]
 }
