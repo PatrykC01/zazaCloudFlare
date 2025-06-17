@@ -1,43 +1,10 @@
-// src/lib/auth.ts
-import NextAuth from "next-auth"
-import Credentials from "next-auth/providers/credentials"
-import { verifyPassword } from "./crypto"
+import NextAuth from 'next-auth'
+import { authOptions } from './authOptions'
 
-export const { handlers, auth } = NextAuth({
-  providers: [
-    Credentials({
-      name: "Admin",
-      credentials: {
-        username: { label: "Nazwa", type: "text" },
-        password: { label: "Hasło", type: "password" },
-      },
-      async authorize(credentials) {
-        const adminUser = process.env.ADMIN_USERNAME
-        const adminHash = process.env.ADMIN_PASSWORD_HASH // "salt:hash"
-        if (!credentials || !adminUser || !adminHash) return null
+// handler do App Router API
+const nextAuthHandler = NextAuth(authOptions)
 
-        const [salt, hash] = adminHash.split(":")
-        if (
-          credentials.username === adminUser &&
-          verifyPassword(credentials.password, salt, hash)
-        ) {
-          return { id: "admin", name: adminUser, role: "admin" }
-        }
-        return null
-      },
-    }),
-  ],
-  pages: { signIn: "/auth/signin", error: "/auth/error" },
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user?.role) token.role = user.role
-      return token
-    },
-    async session({ session, token }) {
-      if (session.user && token.role) {
-        ;(session.user as any).role = token.role
-      }
-      return session
-    },
-  },
-})
+// helper do pobierania sesji w Server Components / page.tsx
+export const auth = nextAuthHandler.auth
+
+export default nextAuthHandler

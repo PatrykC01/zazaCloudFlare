@@ -1,7 +1,6 @@
-// src/app/api/auth/[...nextauth]/route.ts
-import { handlers } from "@/lib/auth"
+import nextAuthHandler from '@/lib/auth'
 
-export const runtime = "edge"
+export const runtime = 'edge'
 
-// zamiast oddzielnych GET/POST, po prostu:
-export default handlers
+// eksport domyślny + aliasy dla GET i POST
+export default nextAuthHandler
