@@ -1,11 +1,10 @@
 // app/cms/requests/page.tsx
-import { getRequests } from '../_actions/reservationActions';
-import RequestsClient from '../_components/RequestsClient';
+import { getRequests } from "../_actions/reservationActions";
+import RequestsClient from "../_components/RequestsClient";
 
-export const runtime = 'edge';
 // Wymuszenie dynamicznego renderowania, aby dane były zawsze świeże
 // lub poleganie na revalidatePath
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 // export const revalidate = 0; // Alternatywa dla force-dynamic
 
 export default async function CmsRequestsPage() {

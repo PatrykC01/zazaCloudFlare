@@ -2,7 +2,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma"; // Zaimportuj zainicjalizowanego klienta Prisma z lib
 
-export const runtime = 'edge';
 // Opcjonalnie: Definicja typu dla zwracanych danych (dla lepszej kontroli)
 // Klucze to tagName, wartości to tagContent
 type ApiContentData = {
