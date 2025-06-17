@@ -10,7 +10,9 @@ export const authOptions = {
         username: { label: "Nazwa użytkownika", type: "text" },
         password: { label: "Hasło", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(
+        credentials: { username: string; password: string } | undefined
+      ) {
         const adminUser = process.env.ADMIN_USERNAME;
         const adminHash = process.env.ADMIN_PASSWORD_HASH; // "salt:hash" lub hash bcrypt
         if (
@@ -30,7 +32,9 @@ export const authOptions = {
             return null;
           } // Verify the password using PBKDF2
           // We know password exists because we checked credentials earlier
-          const ok = verifyPassword(credentials.password!, salt, hash);
+          // We already checked that credentials.password exists
+          const password: string = credentials.password;
+          const ok = verifyPassword(password, salt, hash);
 
           if (credentials.username === adminUser && ok) {
             return { id: "admin", name: adminUser, role: "admin" };
