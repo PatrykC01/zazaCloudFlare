@@ -7,8 +7,20 @@ import {
   deleteRequest,
   acceptRequest,
 } from "../_actions/reservationActions";
-import type { Request as RequestModel } from "@prisma/client"; // Import typu Prisma Request
 import { CheckIcon, XMarkIcon, ArrowPathIcon } from "@heroicons/react/24/solid"; // Ikony dla przycisków
+
+// Define a local Request type based on your Supabase REST API response
+interface RequestModel {
+  id: number;
+  powerboat: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  annotation: string;
+  startDate: string;
+  endDate: string;
+  // Add any other fields returned by Supabase if needed
+}
 
 interface RequestsClientProps {
   initialRequests: RequestModel[];
@@ -163,11 +175,7 @@ export default function RequestsClient({
                     disabled={isPending} // Blokuj wszystkie przyciski podczas dowolnej akcji
                     title="Akceptuj i utwórz rezerwację"
                   >
-                    {pendingActionId === req.id ? (
-                      <p>V</p>
-                    ) : (
-                        <p>V</p>
-                    )}
+                    {pendingActionId === req.id ? <p>V</p> : <p>V</p>}
                   </button>
 
                   {/* Przycisk Odrzuć */}
@@ -177,11 +185,7 @@ export default function RequestsClient({
                     disabled={isPending}
                     title="Odrzuć zapytanie"
                   >
-                    {pendingActionId === req.id ? (
-                      <p>X</p>
-                    ) : (
-                        <p>X</p>
-                    )}
+                    {pendingActionId === req.id ? <p>X</p> : <p>X</p>}
                   </button>
                 </div>
               </div>
