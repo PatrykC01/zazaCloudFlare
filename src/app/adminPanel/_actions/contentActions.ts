@@ -243,13 +243,14 @@ export async function addMediaAction(formData: FormData) {
       admin: true,
       query: `tagName=eq.${tagName}`,
     });
+    // Always define currentPaths as an array
+    const currentPaths = existingContentArr?.[0]?.tagContent
+      ? existingContentArr[0].tagContent.split(",")
+      : [];
     // Prevent adding duplicates
-    if (existingContentArr?.[0]?.tagContent) {
-      const currentPaths = existingContentArr[0].tagContent.split(",");
-      if (currentPaths.includes(mediaPath)) {
-        console.warn(`Media path already exists: ${mediaPath}`);
-        return { success: false, error: "Media item already exists." };
-      }
+    if (currentPaths.includes(mediaPath)) {
+      console.warn(`Media path already exists: ${mediaPath}`);
+      return { success: false, error: "Media item already exists." };
     }
 
     const newPaths = [...currentPaths, mediaPath].filter(Boolean); // Add new path and remove potential empty strings
