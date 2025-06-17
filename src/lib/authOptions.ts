@@ -11,8 +11,9 @@ export const authOptions = {
         password: { label: "Hasło", type: "password" },
       },
       async authorize(
-        credentials: { username: string; password: string } | undefined
-      ) {
+        credentials: Record<"username" | "password", string> | undefined,
+        request: Request
+      ): Promise<null | { id: string; name: string; role: string }> {
         const adminUser = process.env.ADMIN_USERNAME;
         const adminHash = process.env.ADMIN_PASSWORD_HASH; // "salt:hash" lub hash bcrypt
         if (
