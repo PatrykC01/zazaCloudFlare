@@ -16,3 +16,23 @@ async function generateHash() {
 }
 
 generateHash(); // Wywołaj funkcję
+
+// scripts/generate-new-hash.mjs
+// import { exportJWK, generateSecret } from 'jose';
+
+// async function generate() {
+//   // To jest twoje hasło
+//   const password = 'w+uuz/#)nIz7LS5<&Ef6';
+  
+//   // To jest "sól", która powinna być unikalna dla każdego hasła
+//   // W tym przypadku jest stała, bo masz jednego admina
+//   const salt = new TextEncoder().encode('zaza-cloud-flare-salt');
+
+//   const secret = await generateSecret('HS256');
+//   const keyLike = await exportJWK(secret);
+  
+//   // To jest twój nowy HASH - skopiuj go
+//   console.log("Nowy hash (zapisz w .env):", keyLike.k); 
+// }
+
+// generate();

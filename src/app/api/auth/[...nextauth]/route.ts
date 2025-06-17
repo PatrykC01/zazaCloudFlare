@@ -3,7 +3,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import * as bcrypt from 'bcryptjs';
 
-export const runtime = 'edge'; // Nadal potrzebne dla Cloudflare!
+//export const runtime = 'edge'; // Nadal potrzebne dla Cloudflare!
 
 const handler = NextAuth({
   providers: [
