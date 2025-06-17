@@ -1,23 +1,36 @@
-// src/lib/authOptions.ts
+// src/lib/auth.ts
 import Credentials from 'next-auth/providers/credentials'
-import { hashPassword, verifyPassword } from './crypto'
-import { getAdminUser } from './db' // Twoja funkcja pobierająca admina z bazy
+import { verifyPassword } from './crypto'
 
 export const authOptions = {
   providers: [
     Credentials({
       name: 'Admin',
       credentials: {
-        username: { label: 'Nazwa', type: 'text' },
+        username: { label: 'Nazwa użytkownika', type: 'text' },
         password: { label: 'Hasło', type: 'password' },
       },
       async authorize(credentials) {
-        const admin = await getAdminUser()
-        if (!credentials || !admin) return null
+        const adminUser = process.env.ADMIN_USERNAME
+        const adminHash = process.env.ADMIN_PASSWORD_HASH  // powinno być w formacie "salt:hash"
 
-        const [salt, hash] = admin.password.split(':')
-        if (verifyPassword(credentials.password, salt, hash)) {
-          return { id: admin.id, name: admin.username, role: 'admin' }
+        if (
+          !credentials?.username ||
+          !credentials?.password ||
+          !adminUser ||
+          !adminHash
+        ) {
+          return null
+        }
+
+        // rozbijamy env na salt i hash
+        const [salt, hash] = adminHash.split(':')
+
+        if (
+          credentials.username === adminUser &&
+          verifyPassword(credentials.password, salt, hash)
+        ) {
+          return { id: 'admin', name: adminUser, role: 'admin' }
         }
         return null
       },
@@ -31,7 +44,7 @@ export const authOptions = {
     },
     async session({ session, token }) {
       if (session.user && token.role) {
-        (session.user as any).role = token.role
+        ;(session.user as any).role = token.role
       }
       return session
     },
