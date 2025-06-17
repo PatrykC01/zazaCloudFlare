@@ -1,7 +1,7 @@
 // src/lib/auth.ts
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcrypt";
+import * as bcrypt from 'bcryptjs';
 
 // Cała konfiguracja jest teraz tutaj
 export const authOptions: NextAuthOptions = {

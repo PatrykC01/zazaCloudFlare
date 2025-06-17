@@ -1,8 +1,8 @@
 // scripts/hash-password.js LUB scripts/hash-password.mjs
-import bcrypt from "bcrypt"; // Zmień require na import
+import * as bcrypt from 'bcryptjs'; // Zmień require na import
 
 const saltRounds = 10;
-const plainPassword = "w+uuz/#)nIz7LS5<&Ef6"; // Lub inne hasło, dla którego chcesz hash
+const plainPassword = "haslo"; // Lub inne hasło, dla którego chcesz hash
 
 // Użyjemy funkcji asynchronicznej, aby móc użyć await (czytelniejsze niż callback)
 async function generateHash() {
