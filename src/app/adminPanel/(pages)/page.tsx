@@ -1,31 +1,27 @@
 // src/app/adminPanel/(pages)/page.tsx
+import React from "react"
+import { auth } from "@/lib/auth"     // <- teraz dostępny z lib/auth
+import { redirect } from "next/navigation"
+import LogoutButton from "../_components/LogoutButton"
+import { getReservations } from "../_actions/reservationActions"
+import ReservationsClient from "../_components/ReservationsClient"
 
-import React from "react";
-import { auth } from "@/lib/auth"; // <-- POPRAWNY IMPORT
-import { redirect } from 'next/navigation';
-import LogoutButton from '../_components/LogoutButton';
-import { getReservations } from "../_actions/reservationActions";
-import ReservationsClient from "../_components/ReservationsClient";
+export const runtime = "edge"
 
-export const runtime = 'edge';
-
-export default async function AdminPanelPage({ // Zmieniona nazwa na bardziej ogólną
+export default async function AdminPanelPage({
   searchParams,
 }: {
-  searchParams: Promise<{ sortBy?: string; sortDir?: "asc" | "desc" }>;
+  searchParams: Promise<{ sortBy?: string; sortDir?: "asc" | "desc" }>
 }) {
-  const session = await auth();
+  const session = await auth()        // <- tak, bez żadnych argumentów
 
-  // Middleware już powinno załatwić sprawę, ale to jest dodatkowe zabezpieczenie
-  if (!session || (session.user as any)?.role !== 'admin') {
-    redirect('/auth/signin?callbackUrl=/adminPanel');
+  if (!session || (session.user as any)?.role !== "admin") {
+    redirect("/auth/signin?callbackUrl=/adminPanel")
   }
 
-  const resolvedSearchParams = await searchParams;
-  const sortBy = resolvedSearchParams.sortBy || "startDate";
-  const sortDir = resolvedSearchParams.sortDir || "asc";
-  const initialReservations = await getReservations(sortBy, sortDir);
-  
+  const { sortBy = "startDate", sortDir = "asc" } = await searchParams
+  const initialReservations = await getReservations(sortBy, sortDir)
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
@@ -34,5 +30,5 @@ export default async function AdminPanelPage({ // Zmieniona nazwa na bardziej og
       </div>
       <ReservationsClient initialReservations={initialReservations} />
     </div>
-  );
+  )
 }
