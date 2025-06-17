@@ -1,9 +1,20 @@
-// poprzednio: import NextAuth from 'next-auth/next'
 import NextAuth from 'next-auth'
 import { authOptions } from '@/lib/authOptions'
 
 export const runtime = 'edge'
 
-const handler = NextAuth(authOptions)
+// Instancja handlera
+const authHandler = NextAuth(authOptions)
 
-export { handler as GET, handler as POST }
+/**
+ * Next.js oczekuje, że GET/POST będą funkcjami:
+ *   (request: Request) => Promise<Response>
+ * Wywołamy authHandler przekazując mu Request.
+ */
+export async function GET(request: Request) {
+  return authHandler(request)
+}
+
+export async function POST(request: Request) {
+  return authHandler(request)
+}
