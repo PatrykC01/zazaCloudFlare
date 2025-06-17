@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
+
 export default function Oferta() {
   const [data, setData] = useState({
     Map: '',

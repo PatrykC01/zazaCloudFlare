@@ -6,6 +6,7 @@ import { authOptions } from '@/lib/auth'; // <-- Importuj swoje opcje autoryzacj
 import { redirect } from 'next/navigation'; // <-- Importuj redirect dla Server Components
 import LogoutButton from '../_components/LogoutButton'; // <-- Zaimportuj komponent wylogowania (zakładając, że jest w tym samym folderze)
 
+export const runtime = 'edge';
 // Twoje istniejące importy
 import { getReservations } from "../_actions/reservationActions";
 import ReservationsClient from "../_components/ReservationsClient";

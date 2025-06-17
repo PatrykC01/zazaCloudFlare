@@ -15,6 +15,7 @@ import Script from "next/script";
 import prisma from "@/lib/prisma"; // Zaimportuj klienta Prisma
 import { Offer } from "@/app/adminPanel/_actions/contentActions"; // Zaimportuj typ Offer (dostosuj ścieżkę)
 
+export const runtime = 'edge';
 // Typ dla danych pobranych z bazy i przetworzonych
 interface PageContentData {
   HeaderIMG?: string;
