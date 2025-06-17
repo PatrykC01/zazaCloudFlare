@@ -1,7 +1,6 @@
 // src/lib/authOptions.ts
 import Credentials from "next-auth/providers/credentials";
 import { verifyPassword } from "./crypto";
-import bcrypt from "bcryptjs";
 
 export const authOptions = {
   providers: [
@@ -21,19 +20,25 @@ export const authOptions = {
           !adminHash
         ) {
           return null;
-        }
-        // Jeśli hash zawiera dwukropek, użyj PBKDF2, w przeciwnym razie bcrypt
-        if (adminHash.includes(":")) {
+        } // Split the stored hash into salt and hash parts
+        try {
           const [salt, hash] = adminHash.split(":");
+          if (!salt || !hash) {
+            console.error(
+              "Invalid password hash format in environment variables"
+            );
+            return null;
+          }
+
+          // Verify the password using PBKDF2
           const ok = verifyPassword(credentials.password, salt, hash);
+
           if (credentials.username === adminUser && ok) {
             return { id: "admin", name: adminUser, role: "admin" };
           }
-        } else {
-          const ok = await bcrypt.compare(credentials.password, adminHash);
-          if (credentials.username === adminUser && ok) {
-            return { id: "admin", name: adminUser, role: "admin" };
-          }
+        } catch (error) {
+          console.error("Error verifying password:", error);
+          return null;
         }
         return null;
       },
