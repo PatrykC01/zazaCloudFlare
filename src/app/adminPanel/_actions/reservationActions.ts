@@ -19,7 +19,6 @@ export interface ReservationData {
 // Typ dla danych zapytania (pasuje do modelu Request)
 // Zauważ różnice w nazwach pól w porównaniu do ReservationData (np. phoneNumber)
 // Użyjemy typu generowanego przez Prisma dla spójności
-import type { Request as RequestModel } from "@prisma/client"; // Importuj typ modelu Prisma
 
 // --- Istniejące funkcje (createReservation, getReservations, updateReservation, deleteReservation) ---
 // ... (upewnij się, że konwertują daty na ISO string przed zapisem do DB jeśli Reservation przechowuje stringi)
