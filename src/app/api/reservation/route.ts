@@ -1,8 +1,6 @@
 // src/app/api/reservation/route.ts
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { supabaseFetch } from "@/lib/supabaseFetch";
 
 export async function POST(request: Request) {
   try {
@@ -39,8 +37,12 @@ export async function POST(request: Request) {
       // lterms nie jest częścią modelu Request, więc go pomijamy
     };
 
-    const newRequest = await prisma.request.create({
-      data: requestData,
+    // Zapisz do Supabase (tabela: request)
+    const [newRequest] = await supabaseFetch<any[]>("request", {
+      method: "POST",
+      body: requestData,
+      admin: false, // public insert (RLS must allow)
+      headers: { Prefer: "return=representation" }, // zwróć nowy rekord
     });
 
     return NextResponse.json(
@@ -55,7 +57,5 @@ export async function POST(request: Request) {
       errorMessage = error.message;
     }
     return NextResponse.json({ message: errorMessage }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }

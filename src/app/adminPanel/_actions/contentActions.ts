@@ -1,9 +1,9 @@
 // app/cms/_actions/contentActions.ts
 "use server";
 
-import { PrismaClient } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { supabaseFetch } from "@/lib/supabaseFetch";
 
 // Define types for Offer and structured data (adjust if needed)
 export type OfferFeature = string;
@@ -15,32 +15,28 @@ export interface Offer {
   price: string;
   offerLink?: string; // <-- DODAJ TĘ LINIĘ
 }
-const prisma = new PrismaClient();
 
 // --- Helper function to update or create content ---
 async function upsertContent(tagName: string, tagContent: string) {
   try {
-    await prisma.content.upsert({
-      where: { tagName },
-      update: { tagContent },
-      create: { tagName, tagContent },
+    // Try to update first
+    const { count } = await supabaseFetch<any>("content", {
+      method: "PATCH",
+      admin: true,
+      query: `tagName=eq.${tagName}`,
+      body: { tagContent },
+      headers: { Prefer: "return=representation" },
     });
-
-    // Definiujemy poprawną ścieżkę URL do unieważnienia
-    const pathToRevalidate = "/cms/content"; // <--- Zmień na DOKŁADNĄ ścieżkę Twojej strony CMS
-
-    console.log(
-      `[Server Action] Content updated for ${tagName}. Attempting to revalidate: ${pathToRevalidate}`
-    ); // <-- LOG PRZED
-    revalidatePath(pathToRevalidate);
-
-    // Opcjonalnie rewaliduj stronę główną, jeśli tam też wyświetlasz te treści
-    // console.log('[Server Action] Revalidating path: /');
-    // revalidatePath('/');
-
-    console.log(
-      `[Server Action] Revalidation call for ${pathToRevalidate} finished.`
-    ); // <-- LOG PO (dla pewności)
+    // If nothing was updated, insert
+    if (!count) {
+      await supabaseFetch("content", {
+        method: "POST",
+        admin: true,
+        body: { tagName, tagContent },
+        headers: { Prefer: "return=representation" },
+      });
+    }
+    // Optionally: revalidatePath logic (if needed)
     return { success: true };
   } catch (error) {
     console.error(
@@ -134,10 +130,12 @@ export async function updateMultipleContentAction(formData: FormData) {
     baseTagName: string,
     priceKeys: (keyof typeof validatedData)[]
   ) => {
-    const currentContent = await prisma.content.findUnique({
-      where: { tagName: baseTagName },
+    const currentContentArr = await supabaseFetch<any[]>("content", {
+      method: "GET",
+      admin: true,
+      query: `tagName=eq.${baseTagName}`,
     });
-    const currentPrices = currentContent?.tagContent?.split(",") || [];
+    const currentPrices = currentContentArr?.[0]?.tagContent?.split(",") || [];
     const updatedPrices = [...currentPrices]; // Start with existing prices
 
     let changed = false;
@@ -239,17 +237,19 @@ export async function addMediaAction(formData: FormData) {
   const tagName = mediaType === "IMG" ? "GalleryImages" : "GalleryVideos";
 
   try {
-    const existingContent = await prisma.content.findUnique({
-      where: { tagName },
+    // Get current media paths from Supabase
+    const existingContentArr = await supabaseFetch<any[]>("content", {
+      method: "GET",
+      admin: true,
+      query: `tagName=eq.${tagName}`,
     });
-    const currentPaths = existingContent?.tagContent
-      ? existingContent.tagContent.split(",")
-      : [];
-
     // Prevent adding duplicates
-    if (currentPaths.includes(mediaPath)) {
-      console.warn(`Media path already exists: ${mediaPath}`);
-      return { success: false, error: "Media item already exists." };
+    if (existingContentArr?.[0]?.tagContent) {
+      const currentPaths = existingContentArr[0].tagContent.split(",");
+      if (currentPaths.includes(mediaPath)) {
+        console.warn(`Media path already exists: ${mediaPath}`);
+        return { success: false, error: "Media item already exists." };
+      }
     }
 
     const newPaths = [...currentPaths, mediaPath].filter(Boolean); // Add new path and remove potential empty strings
@@ -277,18 +277,21 @@ export async function deleteMediaAction(
   const tagName = mediaType === "IMG" ? "GalleryImages" : "GalleryVideos";
 
   try {
-    const existingContent = await prisma.content.findUnique({
-      where: { tagName },
+    // Get current media paths from Supabase
+    const existingContentArr = await supabaseFetch<any[]>("content", {
+      method: "GET",
+      admin: true,
+      query: `tagName=eq.${tagName}`,
     });
-    if (!existingContent || !existingContent.tagContent) {
+    if (!existingContentArr?.[0]?.tagContent) {
       console.warn(`No content found for ${tagName} to delete from.`);
       return { success: true }; // Nothing to delete
     }
-
-    const currentPaths = existingContent.tagContent.split(",");
+    const currentPaths = existingContentArr[0].tagContent.split(",");
     const newPaths = currentPaths.filter(
-      (path) => path !== mediaPathToDelete && path !== ""
-    ); // Remove the path and empty strings
+      (path: string) => path !== mediaPathToDelete && path !== ""
+    );
+    // Remove the path and empty strings
 
     if (newPaths.length === currentPaths.filter(Boolean).length) {
       console.warn(`Media path not found for deletion: ${mediaPathToDelete}`);
@@ -337,14 +340,17 @@ export async function addOfferAction(formData: FormData) {
   const newOffer: Offer = { img, title, description, features, price };
 
   try {
-    const existingContent = await prisma.content.findUnique({
-      where: { tagName: "Offers" },
+    // Get current offers from Supabase
+    const existingContentArr = await supabaseFetch<any[]>("content", {
+      method: "GET",
+      admin: true,
+      query: `tagName=eq.Offers`,
     });
     let currentOffers: Offer[] = [];
-    if (existingContent?.tagContent) {
+    if (existingContentArr?.[0]?.tagContent) {
       try {
-        currentOffers = JSON.parse(existingContent.tagContent);
-        if (!Array.isArray(currentOffers)) currentOffers = []; // Ensure it's an array
+        currentOffers = JSON.parse(existingContentArr[0].tagContent);
+        if (!Array.isArray(currentOffers)) currentOffers = [];
       } catch (e) {
         console.warn("Failed to parse existing Offers JSON, starting fresh.");
         currentOffers = [];
@@ -375,17 +381,19 @@ export async function deleteOfferAction(offerTitleToDelete: string) {
   }
 
   try {
-    const existingContent = await prisma.content.findUnique({
-      where: { tagName: "Offers" },
+    // Get current offers from Supabase
+    const existingContentArr = await supabaseFetch<any[]>("content", {
+      method: "GET",
+      admin: true,
+      query: `tagName=eq.Offers`,
     });
-    if (!existingContent?.tagContent) {
+    if (!existingContentArr?.[0]?.tagContent) {
       console.warn(`No Offers content found to delete from.`);
       return { success: true }; // Nothing to delete
     }
-
     let currentOffers: Offer[] = [];
     try {
-      currentOffers = JSON.parse(existingContent.tagContent);
+      currentOffers = JSON.parse(existingContentArr[0].tagContent);
       if (!Array.isArray(currentOffers)) {
         console.warn("Offers content is not a valid JSON array.");
         return { success: false, error: "Invalid existing offer data format." };

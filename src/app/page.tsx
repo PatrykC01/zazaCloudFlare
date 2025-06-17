@@ -12,10 +12,10 @@ import GallerySection from "@/components/GallerySection";
 import ContactSection from "@/components/ContactSection";
 import Preloader from "@/components/Preloader";
 import Script from "next/script";
-import prisma from "@/lib/prisma"; // Zaimportuj klienta Prisma
-import { Offer } from "@/app/adminPanel/_actions/contentActions"; // Zaimportuj typ Offer (dostosuj ścieżkę)
+import { supabaseFetch } from "@/lib/supabaseFetch"; // Import supabaseFetch
+import type { Offer } from "@/app/adminPanel/_actions/contentActions"; // Import Offer type from the correct location
 
-export const runtime = 'edge';
+export const runtime = "edge";
 // Typ dla danych pobranych z bazy i przetworzonych
 interface PageContentData {
   HeaderIMG?: string;
@@ -35,8 +35,11 @@ interface PageContentData {
 // Funkcja do pobierania i formatowania danych (nadal Server Component)
 async function getContentData(): Promise<PageContentData> {
   try {
-    console.log("[HomePage] Fetching content data from DB...");
-    const allContentFromDb = await prisma.content.findMany();
+    console.log("[HomePage] Fetching content data from Supabase...");
+    const allContentFromDb = await supabaseFetch<any[]>("content", {
+      method: "GET",
+      admin: false,
+    });
     console.log(`[HomePage] Fetched ${allContentFromDb.length} items.`);
 
     // Przekształć dane z bazy w obiekt
@@ -105,32 +108,32 @@ export default async function HomePage() {
     FooterEmail,
   } = contentData;
 
-return (
+  return (
     <>
       <Preloader />
       <Navbar />
-      <Header backgroundImageUrl={HeaderIMG || '/default-banner.jpg'} />
-      <IntroSection 
-        text={AboutP || ''}
-        imageUrl={AboutIMG || '/default-about.jpg'}
+      <Header backgroundImageUrl={HeaderIMG || "/default-banner.jpg"} />
+      <IntroSection
+        text={AboutP || ""}
+        imageUrl={AboutIMG || "/default-about.jpg"}
       />
       <DescriptionCards /> {/* Zakładam, że statyczne */}
       <OffersSection offers={Offers} />
       <ReservationSection
-        mapSrc={mapSrc || ''}                     // <-- POPRAWKA
-        phoneNumber={FooterPhone || ''}             // <-- POPRAWKA
+        mapSrc={mapSrc || ""} // <-- POPRAWKA
+        phoneNumber={FooterPhone || ""} // <-- POPRAWKA
         offerTitles={Offers.map((o: Offer) => o.title)}
       />
       <GallerySection images={GalleryImages} videos={GalleryVideos} />
       <ContactSection
-        location={FooterLocation || ''}           // <-- POPRAWKA
-        phone={FooterPhone || ''}                   // <-- POPRAWKA
-        email={FooterEmail || ''}                   // <-- POPRAWKA
+        location={FooterLocation || ""} // <-- POPRAWKA
+        phone={FooterPhone || ""} // <-- POPRAWKA
+        email={FooterEmail || ""} // <-- POPRAWKA
       />
       <Footer
-        location={FooterLocation || ''}           // <-- POPRAWKA
-        phone={FooterPhone || ''}                   // <-- POPRAWKA
-        email={FooterEmail || ''}                   // <-- POPRAWKA
+        location={FooterLocation || ""} // <-- POPRAWKA
+        phone={FooterPhone || ""} // <-- POPRAWKA
+        email={FooterEmail || ""} // <-- POPRAWKA
       />
       <Script src="/js/scripts.js" strategy="lazyOnload" />
     </>
