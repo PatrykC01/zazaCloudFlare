@@ -2,5 +2,6 @@
 import { handlers } from "@/lib/auth"
 
 export const runtime = "edge"
-export const GET  = handlers
-export const POST = handlers
+
+// zamiast oddzielnych GET/POST, po prostu:
+export default handlers
