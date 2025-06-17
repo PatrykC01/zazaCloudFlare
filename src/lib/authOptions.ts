@@ -11,17 +11,21 @@ export const authOptions = {
         password: { label: "Hasło", type: "password" },
       },
       async authorize(
-        credentials: Record<"username" | "password", string> | undefined,
+        credentials: Partial<Record<"username" | "password", unknown>>,
         request: Request
       ): Promise<null | { id: string; name: string; role: string }> {
         const adminUser = process.env.ADMIN_USERNAME;
         const adminHash = process.env.ADMIN_PASSWORD_HASH; // "salt:hash" lub hash bcrypt
-        if (
-          !credentials?.username ||
-          !credentials?.password ||
-          !adminUser ||
-          !adminHash
-        ) {
+        // Type guards for credentials
+        const username =
+          typeof credentials?.username === "string"
+            ? credentials.username
+            : undefined;
+        const password =
+          typeof credentials?.password === "string"
+            ? credentials.password
+            : undefined;
+        if (!username || !password || !adminUser || !adminHash) {
           return null;
         } // Split the stored hash into salt and hash parts
         try {
@@ -34,10 +38,9 @@ export const authOptions = {
           } // Verify the password using PBKDF2
           // We know password exists because we checked credentials earlier
           // We already checked that credentials.password exists
-          const password: string = credentials.password;
           const ok = verifyPassword(password, salt, hash);
 
-          if (credentials.username === adminUser && ok) {
+          if (username === adminUser && ok) {
             return { id: "admin", name: adminUser, role: "admin" };
           }
         } catch (error) {
