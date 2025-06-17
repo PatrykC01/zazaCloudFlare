@@ -25,7 +25,7 @@ export const authOptions = {
         // Jeśli hash zawiera dwukropek, użyj PBKDF2, w przeciwnym razie bcrypt
         if (adminHash.includes(":")) {
           const [salt, hash] = adminHash.split(":");
-          const ok = verifyPassword(credentials.password, salt, hash);
+          const ok = await verifyPassword(credentials.password, salt, hash);
           if (credentials.username === adminUser && ok) {
             return { id: "admin", name: adminUser, role: "admin" };
           }
