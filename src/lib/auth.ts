@@ -1,52 +1,12 @@
 // src/lib/auth.ts
-import Credentials from 'next-auth/providers/credentials'
-import { verifyPassword } from './crypto'
+import NextAuth from 'next-auth'
+import { authOptions } from './authOptions'
+import { getServerSession } from 'next-auth/next'
 
-export const authOptions = {
-  providers: [
-    Credentials({
-      name: 'Admin',
-      credentials: {
-        username: { label: 'Nazwa użytkownika', type: 'text' },
-        password: { label: 'Hasło', type: 'password' },
-      },
-      async authorize(credentials) {
-        const adminUser = process.env.ADMIN_USERNAME
-        const adminHash = process.env.ADMIN_PASSWORD_HASH  // powinno być w formacie "salt:hash"
+// dla /api/auth/[...nextauth]/route.ts
+export const handlers = NextAuth(authOptions)
 
-        if (
-          !credentials?.username ||
-          !credentials?.password ||
-          !adminUser ||
-          !adminHash
-        ) {
-          return null
-        }
-
-        // rozbijamy env na salt i hash
-        const [salt, hash] = adminHash.split(':')
-
-        if (
-          credentials.username === adminUser &&
-          verifyPassword(credentials.password, salt, hash)
-        ) {
-          return { id: 'admin', name: adminUser, role: 'admin' }
-        }
-        return null
-      },
-    }),
-  ],
-  pages: { signIn: '/auth/signin', error: '/auth/error' },
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user?.role) token.role = user.role
-      return token
-    },
-    async session({ session, token }) {
-      if (session.user && token.role) {
-        ;(session.user as any).role = token.role
-      }
-      return session
-    },
-  },
+// helper do pobierania sesji w `page.tsx`
+export async function auth() {
+  return await getServerSession(authOptions)
 }

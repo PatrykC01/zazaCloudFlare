@@ -1,6 +1,6 @@
 import { pbkdf2 } from '@noble/hashes/pbkdf2'
 import { sha256 } from '@noble/hashes/sha256'
-import { toHex, hexToBytes } from '@noble/hashes/utils'
+import { bytesToHex, hexToBytes } from '@noble/hashes/utils'
 
 export async function hashPassword(password: string, saltHex?: string) {
   const encoder = new TextEncoder()
@@ -14,9 +14,10 @@ export async function hashPassword(password: string, saltHex?: string) {
     salt,
     { c: 100_000, dkLen: 32 }
   )
+
   return {
-    salt: toHex(salt),
-    hash: toHex(hashBytes),
+    salt: bytesToHex(salt),
+    hash: bytesToHex(hashBytes),
   }
 }
 
@@ -33,5 +34,5 @@ export function verifyPassword(
     salt,
     { c: 100_000, dkLen: 32 }
   )
-  return toHex(hashBytes) === expectedHashHex
+  return bytesToHex(hashBytes) === expectedHashHex
 }
