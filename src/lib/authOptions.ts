@@ -28,10 +28,9 @@ export const authOptions = {
               "Invalid password hash format in environment variables"
             );
             return null;
-          }
-
-          // Verify the password using PBKDF2
-          const ok = verifyPassword(credentials.password, salt, hash);
+          } // Verify the password using PBKDF2
+          // We know password exists because we checked credentials earlier
+          const ok = verifyPassword(credentials.password!, salt, hash);
 
           if (credentials.username === adminUser && ok) {
             return { id: "admin", name: adminUser, role: "admin" };
