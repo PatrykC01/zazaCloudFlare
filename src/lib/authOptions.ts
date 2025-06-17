@@ -12,7 +12,7 @@ export const authOptions = {
       },
       async authorize(credentials) {
         const adminUser = process.env.ADMIN_USERNAME
-        const adminHash = process.env.ADMIN_PASSWORD_HASH
+        const adminHash = process.env.ADMIN_PASSWORD_HASH // "salt:hash"
         if (
           !credentials?.username ||
           !credentials?.password ||
@@ -22,17 +22,18 @@ export const authOptions = {
           return null
         }
         const [salt, hash] = adminHash.split(':')
-        if (
-          credentials.username === adminUser &&
-          verifyPassword(credentials.password, salt, hash)
-        ) {
+        const ok = verifyPassword(credentials.password, salt, hash)
+        if (credentials.username === adminUser && ok) {
           return { id: 'admin', name: adminUser, role: 'admin' }
         }
         return null
       },
     }),
   ],
-  pages: { signIn: '/auth/signin', error: '/auth/error' },
+  pages: {
+    signIn: '/auth/signin',
+    error: '/auth/error',
+  },
   callbacks: {
     async jwt({ token, user }) {
       if (user?.role) token.role = user.role

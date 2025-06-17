@@ -1,6 +1,9 @@
-import nextAuthHandler from '@/lib/auth'
+// poprzednio: import NextAuth from 'next-auth/next'
+import NextAuth from 'next-auth'
+import { authOptions } from '@/lib/authOptions'
 
 export const runtime = 'edge'
 
-// eksport domyślny + aliasy dla GET i POST
-export default nextAuthHandler
+const handler = NextAuth(authOptions)
+
+export { handler as GET, handler as POST }

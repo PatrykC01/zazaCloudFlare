@@ -1,3 +1,4 @@
+// src/app/adminPanel/(pages)/page.tsx
 import React from 'react'
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
