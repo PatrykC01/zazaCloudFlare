@@ -3,5 +3,7 @@ import { authOptions } from "@/lib/authOptions";
 
 export const runtime = "edge";
 
-const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST };
+export default function handler(req: Request, res: Response) {
+  // @ts-ignore
+  return NextAuth(authOptions)(req, res);
+}
