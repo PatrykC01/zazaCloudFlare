@@ -2,6 +2,8 @@
 import { NextResponse } from "next/server";
 import { supabaseFetch } from "@/lib/supabaseFetch";
 
+export const runtime = "edge";
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -46,7 +48,7 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(
-      { message: "Zapytanie zostało wysłane pomyślnie!", request: newRequest },
+      { message: "Zapytanie została wysłana pomyślnie!", request: newRequest },
       { status: 201 }
     );
   } catch (error) {

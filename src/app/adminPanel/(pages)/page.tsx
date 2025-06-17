@@ -6,6 +6,8 @@ import LogoutButton from "../_components/LogoutButton";
 import { getReservations } from "../_actions/reservationActions";
 import ReservationsClient from "../_components/ReservationsClient";
 
+export const runtime = "edge";
+
 export default async function AdminPanelPage({
   searchParams,
 }: {
