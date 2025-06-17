@@ -1,7 +1,6 @@
 // src/app/api/auth/[...nextauth]/route.ts
-
-import NextAuth from "@auth/core";
-import Credentials from "@auth/core/providers/credentials";
+import NextAuth from "next-auth";
+import Credentials from "next-auth/providers/credentials";
 import * as bcrypt from 'bcryptjs';
 
 export const runtime = 'edge'; // Nadal potrzebne dla Cloudflare!
