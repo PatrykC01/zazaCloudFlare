@@ -24,7 +24,7 @@ export default auth((req) => {
   return NextResponse.next();
 });
 
-// Konfiguracja matcher'a - pozostaje bez zmian.
+// Konfiguracja matcher'a
 export const config = {
   matcher: ['/adminPanel/:path*'],
 };
