@@ -3,25 +3,24 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth'; // Używamy naszego pliku konfiguracyjnego
 
-// W Auth.js v5 cała logika middleware dzieje się w jednej funkcji.
-// auth() jest "wszystkim w jednym" - zastępuje withAuth i authorized.
 export default auth((req) => {
   const { pathname } = req.nextUrl;
-  const { token } = req.auth; // req.auth zastępuje req.nextauth
+  const session = req.auth; // req.auth to teraz bezpośrednio obiekt sesji
 
-  // Sprawdzamy, czy użytkownik jest na stronie chronionej i czy ma odpowiednią rolę.
-  // Ta logika jest taka sama jak Twoja!
-  if (pathname.startsWith('/adminPanel') && token?.role !== 'admin') {
-    // Jeśli użytkownik jest zalogowany, ale nie jest adminem,
-    // przekierowujemy go na stronę główną.
-    console.log('Nieautoryzowany dostęp do /adminPanel przez:', token?.name || 'nieznany');
-    return NextResponse.redirect(new URL('/', req.url));
+  // Sprawdzamy, czy użytkownik jest zalogowany i czy ma odpowiednią rolę
+  if (pathname.startsWith('/adminPanel')) {
+    // req.auth będzie null jeśli użytkownik nie jest zalogowany.
+    // auth() samo obsłuży przekierowanie w takim przypadku.
+    // My musimy sprawdzić tylko przypadek zalogowanego użytkownika bez uprawnień.
+    if (session && (session.user as any)?.role !== 'admin') {
+      console.log('Nieautoryzowany dostęp do /adminPanel przez:', session.user?.name || 'nieznany');
+      // Przekierowujemy na stronę główną, bo użytkownik jest zalogowany, ale nie jest adminem.
+      return NextResponse.redirect(new URL('/', req.url));
+    }
   }
 
-  // Jeśli warunek nie jest spełniony (użytkownik jest adminem LUB jest na innej stronie),
-  // pozwalamy na kontynuację. Funkcja `auth` domyślnie zajmie się niezalogowanymi
-  // użytkownikami, przekierowując ich na stronę zdefiniowaną w `pages: { signIn: ... }`
-  // w pliku auth.ts
+  // Dla wszystkich innych przypadków (admin na /adminPanel lub dowolny użytkownik na innej stronie),
+  // pozwalamy na kontynuację.
   return NextResponse.next();
 });
 
