@@ -1,18 +1,35 @@
 // src/app/auth/signin/SignInForm.tsx
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function SignInForm() {
-  const searchParams = useSearchParams();
-  const error = searchParams.get("error");
-  const callbackUrl = searchParams.get("callbackUrl") || "/adminPanel";
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    const form = e.currentTarget;
+    const username = (form.username as HTMLInputElement).value;
+    const password = (form.password as HTMLInputElement).value;
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    });
+    if (res.ok) {
+      // Redirect to admin panel
+      router.push("/adminPanel");
+    } else {
+      const data = await res.json();
+      setError(data.message || "Błąd logowania");
+    }
+  }
 
   return (
-    <form method="post" action="/api/auth/callback/credentials">
-      {/* callbackUrl przekazany do NextAuth */}
-      <input name="callbackUrl" type="hidden" value={callbackUrl} />
+    <form onSubmit={handleSubmit}>
       <input
         name="username"
         type="text"
@@ -21,11 +38,7 @@ export default function SignInForm() {
       />
       <input name="password" type="password" placeholder="Hasło" required />
       <button type="submit">Zaloguj się</button>
-      {error && (
-        <div className="alert alert-danger mt-2">
-          Nieprawidłowa nazwa użytkownika lub hasło.
-        </div>
-      )}
+      {error && <div className="alert alert-danger mt-2">{error}</div>}
     </form>
   );
 }
