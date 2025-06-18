@@ -101,7 +101,9 @@ const UpdateMultipleContentSchema = z.object({
   FooterLocation: z.string().optional(),
   FooterPhone: z.string().optional(),
   FooterEmail: z.string().optional(),
-  // Add pricing fields if needed
+  // Add pricing fields if needed (tylko pojedyncze, bo w bazie masz string z przecinkami)
+  // Jeśli chcesz obsługiwać wiele cen, zrób to jako tablica/CSV w jednym polu
+  // Usuwam CenaBezPaliwa2+, CenaZPaliwem2+ itd.
   CenaBezPaliwa1: z.string().optional(),
   CenaBezPaliwem1: z.string().optional(),
   Skuter10min: z.string().optional(),
@@ -136,76 +138,8 @@ export async function updateMultipleContentAction(formData: FormData) {
     }
   }
 
-  // Handle pricing lists (combine/split comma-separated values)
-  const updatePricingList = async (
-    baseTagName: string,
-    priceKeys: (keyof typeof validatedData)[]
-  ) => {
-    const currentContentArr = await supabaseFetch<any[]>("content", {
-      method: "GET",
-      admin: true,
-      query: `tagName=eq.${baseTagName}`,
-    });
-    const currentPrices = currentContentArr?.[0]?.tagContent?.split(",") || [];
-    const updatedPrices = [...currentPrices]; // Start with existing prices
-
-    let changed = false;
-    priceKeys.forEach((key, index) => {
-      const newValue = validatedData[key];
-      // Update only if a new value is provided (not undefined)
-      // Allow empty string to clear a price
-      if (newValue !== undefined) {
-        // Pad the array if the index is out of bounds
-        while (updatedPrices.length <= index) {
-          updatedPrices.push("");
-        }
-        if (updatedPrices[index] !== newValue) {
-          updatedPrices[index] = newValue ?? ""; // Use empty string if null/undefined
-          changed = true;
-          console.log(
-            `  -> Updating ${baseTagName} index ${index} with: ${updatedPrices[index]}`
-          );
-        }
-      }
-    });
-
-    if (changed) {
-      console.log(
-        `  -> Scheduling update for ${baseTagName} with combined value: ${updatedPrices.join(
-          ","
-        )}`
-      );
-      updates.push(upsertContent(baseTagName, updatedPrices.join(",")));
-    } else {
-      console.log(
-        `  -> No changes detected for ${baseTagName}, skipping update.`
-      );
-    }
-  };
-
-  // Call for each pricing group
-  await updatePricingList("NaDobyBezPaliwa", [
-    "CenaBezPaliwa1",
-    "CenaBezPaliwa2",
-    "CenaBezPaliwa3",
-    "CenaBezPaliwa4",
-    "CenaBezPaliwa5",
-  ]);
-  await updatePricingList("NaDobyZPaliwem", [
-    "CenaZPaliwem1",
-    "CenaZPaliwem2",
-    "CenaZPaliwem3",
-    "CenaZPaliwem4",
-    "CenaZPaliwem5",
-    "CenaZPaliwem6",
-  ]);
-  await updatePricingList("PrzejazdSkuterem", [
-    "Skuter10min",
-    "Skuter30min",
-    "Skuter60min",
-  ]);
-  // Single value pricing - already handled by the loop above
-  // await updatePricingList('PrzejazdPontonem', ['PrzejazdPontonem']);
+  // Usuwam wywołania updatePricingList z wieloma kluczami, bo nie masz takich pól w schema ani w bazie
+  // Jeśli chcesz obsługiwać wiele cen, zrób to jako CSV w jednym polu (już masz w bazie)
 
   try {
     const results = await Promise.all(updates);
