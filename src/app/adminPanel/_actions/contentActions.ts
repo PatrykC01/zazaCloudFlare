@@ -19,22 +19,42 @@ export interface Offer {
 // --- Helper function to update or create content ---
 async function upsertContent(tagName: string, tagContent: string) {
   try {
-    // Try to update first
-    const { count } = await supabaseFetch<any>("content", {
-      method: "PATCH",
+    // 1. Check if content exists
+    const existing = await supabaseFetch<any>("content", {
+      method: "GET",
       admin: true,
       query: `tagName=eq.${tagName}`,
-      body: { tagContent },
-      headers: { Prefer: "return=representation" },
     });
-    // If nothing was updated, insert
-    if (!count) {
-      await supabaseFetch("content", {
+    let updated = null;
+    if (Array.isArray(existing) && existing.length > 0) {
+      // 2. If exists, PATCH (update)
+      updated = await supabaseFetch("content", {
+        method: "PATCH",
+        admin: true,
+        query: `tagName=eq.${tagName}`,
+        body: { tagContent },
+        headers: { Prefer: "return=representation" },
+      });
+      // If PATCH did not update any row, try POST
+      if (!Array.isArray(updated) || updated.length === 0) {
+        updated = await supabaseFetch("content", {
+          method: "POST",
+          admin: true,
+          body: { tagName, tagContent },
+          headers: { Prefer: "return=representation" },
+        });
+      }
+    } else {
+      // 3. If not exists, POST (insert)
+      updated = await supabaseFetch("content", {
         method: "POST",
         admin: true,
         body: { tagName, tagContent },
         headers: { Prefer: "return=representation" },
       });
+    }
+    if (!updated || (Array.isArray(updated) && updated.length === 0)) {
+      throw new Error("Supabase: No row updated or inserted.");
     }
     // Optionally: revalidatePath logic (if needed)
     return { success: true };
@@ -83,16 +103,7 @@ const UpdateMultipleContentSchema = z.object({
   FooterEmail: z.string().optional(),
   // Add pricing fields if needed
   CenaBezPaliwa1: z.string().optional(),
-  CenaBezPaliwa2: z.string().optional(),
-  CenaBezPaliwa3: z.string().optional(),
-  CenaBezPaliwa4: z.string().optional(),
-  CenaBezPaliwa5: z.string().optional(),
-  CenaZPaliwem1: z.string().optional(),
-  CenaZPaliwem2: z.string().optional(),
-  CenaZPaliwem3: z.string().optional(),
-  CenaZPaliwem4: z.string().optional(),
-  CenaZPaliwem5: z.string().optional(),
-  CenaZPaliwem6: z.string().optional(),
+  CenaBezPaliwem1: z.string().optional(),
   Skuter10min: z.string().optional(),
   Skuter30min: z.string().optional(),
   Skuter60min: z.string().optional(),

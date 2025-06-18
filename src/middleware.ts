@@ -1,30 +1,27 @@
-// src/middleware.ts
+// middleware.ts
+export const runtime = "nodejs";
 
-import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth'; // Używamy naszego pliku konfiguracyjnego
+import { withAuth } from "next-auth/middleware";
+import { NextResponse } from "next/server";
 
-export default auth((req) => {
-  const { pathname } = req.nextUrl;
-  const session = req.auth; // req.auth to teraz bezpośrednio obiekt sesji
-
-  // Sprawdzamy, czy użytkownik jest zalogowany i czy ma odpowiednią rolę
-  if (pathname.startsWith('/adminPanel')) {
-    // req.auth będzie null jeśli użytkownik nie jest zalogowany.
-    // auth() samo obsłuży przekierowanie w takim przypadku.
-    // My musimy sprawdzić tylko przypadek zalogowanego użytkownika bez uprawnień.
-    if (session && (session.user as any)?.role !== 'admin') {
-      console.log('Nieautoryzowany dostęp do /adminPanel przez:', session.user?.name || 'nieznany');
-      // Przekierowujemy na stronę główną, bo użytkownik jest zalogowany, ale nie jest adminem.
-      return NextResponse.redirect(new URL('/', req.url));
+export default withAuth(
+  (req) => {
+    const { pathname } = req.nextUrl;
+    const token = req.nextauth?.token;
+    // Sprawdź czy użytkownik jest adminem
+    if (
+      pathname.startsWith("/adminPanel") &&
+      (!token || token.role !== "admin")
+    ) {
+      const signInUrl = new URL("/auth/signin", req.url);
+      signInUrl.searchParams.set("callbackUrl", req.nextUrl.pathname);
+      return NextResponse.redirect(signInUrl);
     }
+    return NextResponse.next();
+  },
+  {
+    pages: { signIn: "/auth/signin" },
   }
+);
 
-  // Dla wszystkich innych przypadków (admin na /adminPanel lub dowolny użytkownik na innej stronie),
-  // pozwalamy na kontynuację.
-  return NextResponse.next();
-});
-
-// Konfiguracja matcher'a
-export const config = {
-  matcher: ['/adminPanel/:path*'],
-};
+export const config = { matcher: ["/adminPanel/:path*"] };

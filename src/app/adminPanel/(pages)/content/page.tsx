@@ -56,13 +56,14 @@ export default async function CmsPage() {
       method: "GET",
       admin: false,
     });
+    console.log("[CMS] Fetched content from Supabase:", allContent);
 
     // Map fetched data into a structured object
     allContent.forEach((item) => {
       fetchedContent[item.tagName] = item.tagContent;
     });
 
-    // Parse complex fields
+    // Parse complex fields (poprawne klucze!)
     fetchedContent.Offers = parseJsonArray<Offer>(
       fetchedContent.Offers as string | undefined
     );
@@ -73,7 +74,7 @@ export default async function CmsPage() {
       fetchedContent.GalleryVideos as string | undefined
     );
     fetchedContent.NaDobyBezPaliwa = parseCommaSeparated(
-      fetchedContent.NaDobyBezPaliwem as string | undefined
+      fetchedContent.NaDobyBezPaliwa as string | undefined
     );
     fetchedContent.NaDobyZPaliwem = parseCommaSeparated(
       fetchedContent.NaDobyZPaliwem as string | undefined
@@ -81,7 +82,7 @@ export default async function CmsPage() {
     fetchedContent.PrzejazdSkuterem = parseCommaSeparated(
       fetchedContent.PrzejazdSkuterem as string | undefined
     );
-    // PrzejazdPontonem is likely a single value, keep as string fetchedContent.PrzejazdPontonem
+    // PrzejazdPontonem zostaje jako string fetchedContent.PrzejazdPontonem
   } catch (error) {
     console.error("Error fetching CMS content:", error);
     // Handle error display if necessary

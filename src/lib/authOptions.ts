@@ -1,10 +1,8 @@
-// src/lib/authOptions.ts
 import Credentials from "next-auth/providers/credentials";
 import { verifyPassword } from "./crypto";
-import type { JWT } from "next-auth/jwt";
-import type { Session, User } from "next-auth";
+import type { NextAuthOptions } from "next-auth";
 
-export const authOptions = {
+export const authOptions: NextAuthOptions = {
   providers: [
     Credentials({
       name: "Admin",
@@ -13,58 +11,47 @@ export const authOptions = {
         password: { label: "Hasło", type: "password" },
       },
       async authorize(
-        credentials: Partial<Record<"username" | "password", unknown>>,
-        request: Request
-      ): Promise<null | { id: string; name: string; role: string }> {
-        const adminUser = process.env.ADMIN_USERNAME;
-        const adminHash = process.env.ADMIN_PASSWORD_HASH; // "salt:hash" lub hash bcrypt
-        // Type guards for credentials
-        const username =
-          typeof credentials?.username === "string"
-            ? credentials.username
-            : undefined;
-        const password =
-          typeof credentials?.password === "string"
-            ? credentials.password
-            : undefined;
-        if (!username || !password || !adminUser || !adminHash) {
-          return null;
-        } // Split the stored hash into salt and hash parts
-        try {
-          const [salt, hash] = adminHash.split(":");
-          if (!salt || !hash) {
-            console.error(
-              "Invalid password hash format in environment variables"
-            );
-            return null;
-          } // Verify the password using PBKDF2
-          // We know password exists because we checked credentials earlier
-          // We already checked that credentials.password exists
-          const ok = verifyPassword(password, salt, hash);
-
-          if (username === adminUser && ok) {
-            return { id: "admin", name: adminUser, role: "admin" };
-          }
-        } catch (error) {
-          console.error("Error verifying password:", error);
+        credentials: Record<"username" | "password", string> | undefined
+      ) {
+        console.log("🚀 [authorize] called with:", credentials);
+        if (!credentials) {
+          console.log("❌ No credentials provided");
           return null;
         }
+        const { username, password } = credentials;
+        console.log("✅ Got username:", username, "password:", password);
+
+        // Sprawdź ENV-y
+        console.log("🛠️ ENV ADMIN_USERNAME:", process.env.ADMIN_USERNAME);
+        console.log(
+          "🛠️ ENV ADMIN_PASSWORD_HASH:",
+          process.env.ADMIN_PASSWORD_HASH
+        );
+
+        // Tutaj dalej Twój verifyPassword...
+        const [salt, hash] = (process.env.ADMIN_PASSWORD_HASH || "").split(":");
+        const ok = await verifyPassword(password, salt, hash);
+        console.log("🔑 verifyPassword returned:", ok);
+
+        if (username === process.env.ADMIN_USERNAME && ok) {
+          console.log("🎉 Authorization success");
+          return { id: "admin", name: username, role: "admin" };
+        }
+        console.log("❌ Authorization failed");
         return null;
       },
     }),
   ],
-  pages: {
-    signIn: "/auth/signin",
-    error: "/auth/error",
-  },
+  pages: { signIn: "/auth/signin", error: "/auth/error" },
+  debug: true,
   callbacks: {
-    async jwt({ token, user }: { token: JWT; user?: User }) {
+    async jwt({ token, user }) {
       if (user?.role) token.role = user.role;
       return token;
     },
-    async session({ session, token }: { session: Session; token: JWT }) {
+    async session({ session, token }) {
       if (session.user && token.role) {
-        (session.user as any).role = token.role;
+        session.user.role = token.role;
       }
       return session;
     },

@@ -51,22 +51,44 @@ async function getContentData(): Promise<PageContentData> {
       {} as { [key: string]: string }
     );
 
-    // Przetwórz specyficzne pola (stringi na tablice/obiekty)
+    // Poprawne parsowanie wszystkich pól
     const pageData: PageContentData = {
-      ...formattedData, // Skopiuj wszystkie pobrane pola
+      ...formattedData,
       GalleryImages: formattedData.GalleryImages
         ? formattedData.GalleryImages.split(",")
             .map((s) => s.trim())
-            .filter(Boolean) // Bezpieczne parsowanie
+            .filter(Boolean)
         : [],
       GalleryVideos: formattedData.GalleryVideos
         ? formattedData.GalleryVideos.split(",")
             .map((s) => s.trim())
-            .filter(Boolean) // Bezpieczne parsowanie
+            .filter(Boolean)
         : [],
       Offers: formattedData.Offers
-        ? JSON.parse(formattedData.Offers) // Parsuj JSON z ofertami
+        ? (() => {
+            try {
+              return JSON.parse(formattedData.Offers);
+            } catch {
+              return [];
+            }
+          })()
         : [],
+      NaDobyBezPaliwa: formattedData.NaDobyBezPaliwa
+        ? formattedData.NaDobyBezPaliwa.split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [],
+      NaDobyZPaliwem: formattedData.NaDobyZPaliwem
+        ? formattedData.NaDobyZPaliwem.split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [],
+      PrzejazdSkuterem: formattedData.PrzejazdSkuterem
+        ? formattedData.PrzejazdSkuterem.split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [],
+      // PrzejazdPontonem zostaje jako string
     };
 
     // Sprawdź, czy parsowanie Offers się powiodło i czy jest to tablica

@@ -1,19 +1,20 @@
 // src/app/adminPanel/(pages)/page.tsx
 import React from "react";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import LogoutButton from "../_components/LogoutButton";
 import { getReservations } from "../_actions/reservationActions";
 import ReservationsClient from "../_components/ReservationsClient";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 export default async function AdminPanelPage({
   searchParams,
 }: {
   searchParams: Promise<{ sortBy?: string; sortDir?: "asc" | "desc" }>;
 }) {
-  const session = await auth();
+  const session = await getServerSession(authOptions);
   if (!session || (session.user as any)?.role !== "admin") {
     redirect("/auth/signin?callbackUrl=/adminPanel");
   }

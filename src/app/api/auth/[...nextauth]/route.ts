@@ -1,15 +1,8 @@
-import NextAuth from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+// zamiast 'edge' daj 'nodejs'
+export const runtime = 'nodejs'
 
-export const runtime = "edge";
+import NextAuth from 'next-auth'
+import { authOptions } from '@/lib/authOptions'
 
-// Eksportuj funkcje GET i POST zgodnie z wymaganiami Next.js App Router
-export async function GET(request: Request) {
-  // @ts-ignore
-  return NextAuth(authOptions)(request);
-}
-
-export async function POST(request: Request) {
-  // @ts-ignore
-  return NextAuth(authOptions)(request);
-}
+const handler = NextAuth(authOptions)
+export { handler as GET, handler as POST }
