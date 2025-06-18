@@ -1,16 +1,15 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 
-export default function SignInPage() {
+function SignInForm() {
   const params = useSearchParams();
   const callbackUrl = "/adminPanel";
   const [error, setError] = useState<string | null>(
-    params.get("error")
-      ? "Nieprawidłowa nazwa użytkownika lub hasło."
-      : null
+    params.get("error") ? "Nieprawidłowa nazwa użytkownika lub hasło." : null
   );
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -42,37 +41,45 @@ export default function SignInPage() {
   };
 
   return (
+    <form onSubmit={handleSubmit}>
+      <div className="form-group">
+        <label htmlFor="username">Nazwa użytkownika</label>
+        <input
+          id="username"
+          name="username"
+          type="text"
+          required
+          className="form-control-input"
+        />
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="password">Hasło</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          required
+          className="form-control-input"
+        />
+      </div>
+
+      <button type="submit" className="form-control-submit-button">
+        Zaloguj się
+      </button>
+
+      {error && <div className="alert alert-danger">{error}</div>}
+    </form>
+  );
+}
+
+export default function SignInPage() {
+  return (
     <div className="container form-1">
       <h2>Panel Administratora</h2>
-      {error && <div className="alert alert-danger">{error}</div>}
-
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="username">Nazwa użytkownika</label>
-          <input
-            id="username"
-            name="username"
-            type="text"
-            required
-            className="form-control-input"
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="password">Hasło</label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            required
-            className="form-control-input"
-          />
-        </div>
-
-        <button type="submit" className="form-control-submit-button">
-          Zaloguj się
-        </button>
-      </form>
+      <Suspense fallback={<div>Ładowanie formularza logowania...</div>}>
+        <SignInForm />
+      </Suspense>
     </div>
   );
 }
