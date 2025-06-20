@@ -3,16 +3,10 @@
 
 import React, { useState, useTransition, useEffect } from "react";
 import type { ReservationData } from "@/types/reservation";
-import {
-  createReservation,
-  deleteReservation,
-  updateReservation,
-  getReservations,
-} from "../_actions/reservationActions";
 import ReservationCard from "./ReservationCard";
 import ReservationForm from "./ReservationForm";
-import ConfirmationModal from "./ConfirmationModal"; // Upewnij się, że CSS dla tego modala jest poprawny
-import FilterPanel from "./FilterPanel"; // Zakładam, że ten komponent istnieje
+import ConfirmationModal from "./ConfirmationModal";
+import FilterPanel from "./FilterPanel";
 
 // Typ dla obiektu rezerwacji pobranego z serwera (może zawierać ID)
 type ReservationFromServer = ReservationData & { id: number };
@@ -20,6 +14,39 @@ type ReservationFromServer = ReservationData & { id: number };
 interface ReservationsClientProps {
   initialReservations: ReservationFromServer[];
 }
+
+const fetchReservations = async (sortValue: string, sortDir: string) => {
+  const res = await fetch(
+    `/api/reservation?sortBy=${sortValue}&sortDir=${sortDir}`
+  );
+  if (!res.ok) throw new Error("Błąd pobierania rezerwacji");
+  return await res.json();
+};
+
+const createReservationApi = async (data: ReservationData) => {
+  const res = await fetch("/api/reservation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return await res.json();
+};
+
+const updateReservationApi = async (id: number, data: ReservationData) => {
+  const res = await fetch(`/api/reservation?id=${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return await res.json();
+};
+
+const deleteReservationApi = async (id: number) => {
+  const res = await fetch(`/api/reservation?id=${id}`, {
+    method: "DELETE",
+  });
+  return await res.json();
+};
 
 export default function ReservationsClient({
   initialReservations,
@@ -80,11 +107,11 @@ export default function ReservationsClient({
 
   const handleCreate = async (data: ReservationData) => {
     startTransition(async () => {
-      const result = await createReservation(data);
+      const result = await createReservationApi(data);
       if (result.success) {
         setShowCreateForm(false);
         // Ponowne pobranie danych po sukcesie
-        const updatedReservations = await getReservations(
+        const updatedReservations = await fetchReservations(
           sortValue,
           sortDesc ? "desc" : "asc"
         );
@@ -99,11 +126,11 @@ export default function ReservationsClient({
   const handleUpdate = async (data: ReservationData) => {
     if (!editingReservation) return;
     startTransition(async () => {
-      const result = await updateReservation(editingReservation.id, data);
+      const result = await updateReservationApi(editingReservation.id, data);
       if (result.success) {
         setEditingReservation(null);
         // Ponowne pobranie danych po sukcesie
-        const updatedReservations = await getReservations(
+        const updatedReservations = await fetchReservations(
           sortValue,
           sortDesc ? "desc" : "asc"
         );
@@ -125,13 +152,13 @@ export default function ReservationsClient({
   const handleDelete = () => {
     if (!reservationToDelete) return; // Sprawdź, czy jest co usuwać
     startTransition(async () => {
-      const result = await deleteReservation(reservationToDelete.id);
+      const result = await deleteReservationApi(reservationToDelete.id);
       if (result.success) {
         // Po sukcesie: zresetuj rezerwację do usunięcia I ZAMKNIJ MODAL
         setReservationToDelete(null);
         setIsDeleteModalOpen(false); // !!! DODANE: Zamyka modal po sukcesie !!!
         // Ponowne pobranie danych po sukcesie
-        const updatedReservations = await getReservations(
+        const updatedReservations = await fetchReservations(
           sortValue,
           sortDesc ? "desc" : "asc"
         );

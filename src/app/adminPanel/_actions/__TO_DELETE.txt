@@ -1,1 +1,0 @@
-Pliki contentActions.ts, requestActions.ts, reservationActions.ts są już niepotrzebne i można je bezpiecznie usunąć. Typy przeniesiono do src/types/offer.ts i src/types/reservation.ts.

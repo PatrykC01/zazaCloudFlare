@@ -43,13 +43,23 @@ export async function GET(request: Request) {
 
 // POST: Upsert content (Edge-compatible, JWT-protected)
 import { cookies } from "next/headers";
-import { verifyJwt } from "@/lib/crypto";
+import { jwtVerify } from "jose";
+
+async function verifyJwt(token: string) {
+  try {
+    const secret = new TextEncoder().encode(process.env.ADMIN_JWT_SECRET);
+    const { payload } = await jwtVerify(token, secret);
+    return payload;
+  } catch {
+    return null;
+  }
+}
 
 export async function POST(request: Request) {
   try {
     // 1. Sprawdź JWT sesji admina
     const cookieStore = cookies();
-    const token = cookieStore.get("zaza_admin_session")?.value;
+    const token = cookieStore.get("admin_session")?.value;
     if (!token) {
       return NextResponse.json(
         { success: false, message: "Brak sesji" },
@@ -74,15 +84,40 @@ export async function POST(request: Request) {
     }
 
     // 3. Upsert do Supabase REST API
-    const upsertResult = await supabaseFetch("content", {
-      method: "POST",
-      admin: true,
-      body: JSON.stringify([{ tagName, tagContent }]),
-      headers: { Prefer: "resolution=merge-duplicates" },
-    });
+    const upsertPayload = [{ tagName, tagContent }];
+    let upsertResult;
+    try {
+      upsertResult = await supabaseFetch("content", {
+        method: "POST",
+        admin: true,
+        body: upsertPayload, // przekazujemy obiekt, nie string
+        headers: {
+          Prefer: "return=representation, resolution=merge-duplicates",
+        },
+        query: "on_conflict=tagName", // KLUCZOWE: upsert po tagName
+      });
+    } catch (err) {
+      console.error("Supabase upsert error:", err);
+      return NextResponse.json(
+        { success: false, message: "Błąd Supabase: " + String(err) },
+        { status: 500 }
+      );
+    }
 
-    // 4. Zwróć sukces
-    return NextResponse.json({ success: true });
+    if (
+      !upsertResult ||
+      !Array.isArray(upsertResult) ||
+      upsertResult.length === 0
+    ) {
+      console.error("Supabase upsert zwrócił pustą odpowiedź:", upsertResult);
+      return NextResponse.json(
+        { success: false, message: "Upsert nie powiódł się" },
+        { status: 500 }
+      );
+    }
+
+    // 4. Zwróć sukces i dane
+    return NextResponse.json({ success: true, data: upsertResult });
   } catch (error) {
     console.error("API /api/content POST error:", error);
     return NextResponse.json(

@@ -35,33 +35,25 @@ interface PageContentData {
 // Funkcja do pobierania i formatowania danych (nadal Server Component)
 async function getContentData(): Promise<PageContentData> {
   try {
-    console.log("[HomePage] Fetching content data from Supabase...");
-    const allContentFromDb = await supabaseFetch<any[]>("content", {
-      method: "GET",
-      admin: false,
-    });
-    console.log(`[HomePage] Fetched ${allContentFromDb.length} items.`);
-
-    // Przekształć dane z bazy w obiekt
-    const formattedData: { [key: string]: string } = allContentFromDb.reduce(
-      (acc, item) => {
-        acc[item.tagName] = item.tagContent;
-        return acc;
-      },
-      {} as { [key: string]: string }
-    );
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BASE_URL ||
+      (process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "http://localhost:3000");
+    const res = await fetch(`${baseUrl}/api/content`, { cache: "no-store" });
+    const formattedData = await res.json();
 
     // Poprawne parsowanie wszystkich pól
     const pageData: PageContentData = {
       ...formattedData,
       GalleryImages: formattedData.GalleryImages
         ? formattedData.GalleryImages.split(",")
-            .map((s) => s.trim())
+            .map((s: string) => s.trim())
             .filter(Boolean)
         : [],
       GalleryVideos: formattedData.GalleryVideos
         ? formattedData.GalleryVideos.split(",")
-            .map((s) => s.trim())
+            .map((s: string) => s.trim())
             .filter(Boolean)
         : [],
       Offers: formattedData.Offers
@@ -75,17 +67,17 @@ async function getContentData(): Promise<PageContentData> {
         : [],
       NaDobyBezPaliwa: formattedData.NaDobyBezPaliwa
         ? formattedData.NaDobyBezPaliwa.split(",")
-            .map((s) => s.trim())
+            .map((s: string) => s.trim())
             .filter(Boolean)
         : [],
       NaDobyZPaliwem: formattedData.NaDobyZPaliwem
         ? formattedData.NaDobyZPaliwem.split(",")
-            .map((s) => s.trim())
+            .map((s: string) => s.trim())
             .filter(Boolean)
         : [],
       PrzejazdSkuterem: formattedData.PrzejazdSkuterem
         ? formattedData.PrzejazdSkuterem.split(",")
-            .map((s) => s.trim())
+            .map((s: string) => s.trim())
             .filter(Boolean)
         : [],
       // PrzejazdPontonem zostaje jako string

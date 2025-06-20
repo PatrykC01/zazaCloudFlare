@@ -1,16 +1,26 @@
 import { NextResponse } from "next/server";
 import { supabaseFetch } from "@/lib/supabaseFetch";
 import { cookies } from "next/headers";
-import { verifyJwt } from "@/lib/crypto";
+import { jwtVerify } from "jose";
 
 export const dynamic = "force-dynamic";
 export const runtime = "edge";
+
+async function verifyJwt(token: string) {
+  try {
+    const secret = new TextEncoder().encode(process.env.ADMIN_JWT_SECRET);
+    const { payload } = await jwtVerify(token, secret);
+    return payload;
+  } catch {
+    return null;
+  }
+}
 
 // GET: Pobierz wszystkie zapytania (tylko admin)
 export async function GET() {
   try {
     const cookieStore = cookies();
-    const token = cookieStore.get("zaza_admin_session")?.value;
+    const token = cookieStore.get("admin_session")?.value;
     if (!token)
       return NextResponse.json(
         { success: false, message: "Brak sesji" },
@@ -41,7 +51,7 @@ export async function GET() {
 export async function DELETE(request: Request) {
   try {
     const cookieStore = cookies();
-    const token = cookieStore.get("zaza_admin_session")?.value;
+    const token = cookieStore.get("admin_session")?.value;
     if (!token)
       return NextResponse.json(
         { success: false, message: "Brak sesji" },

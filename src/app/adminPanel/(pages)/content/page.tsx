@@ -51,17 +51,18 @@ export default async function CmsPage() {
   const fetchedContent: CmsContentData = {};
 
   try {
-    // Fetch all content from Supabase
-    const allContent = await supabaseFetch<any[]>("content", {
-      method: "GET",
-      admin: false,
-    });
-    console.log("[CMS] Fetched content from Supabase:", allContent);
+    // Fetch all content from API Route (always fresh)
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BASE_URL ||
+      (process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "http://localhost:3000");
+    const res = await fetch(`${baseUrl}/api/content`, { cache: "no-store" });
+    const allContent = await res.json();
+    console.log("[CMS] Fetched content from /api/content:", allContent);
 
     // Map fetched data into a structured object
-    allContent.forEach((item) => {
-      fetchedContent[item.tagName] = item.tagContent;
-    });
+    Object.assign(fetchedContent, allContent);
 
     // Parse complex fields (poprawne klucze!)
     fetchedContent.Offers = parseJsonArray<Offer>(

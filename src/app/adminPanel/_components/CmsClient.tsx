@@ -101,6 +101,7 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tagName, tagContent: value ?? "" }),
+        credentials: "include",
       });
       const result = await res.json();
       if (!result.success)
@@ -144,6 +145,7 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(update),
+          credentials: "include",
         });
         const result = await res.json();
         if (!result.success) throw new Error(result.message || "Unknown error");
@@ -169,6 +171,7 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(offer),
+        credentials: "include",
       });
       const result = await res.json();
       if (!result.success) throw new Error(result.message || "Unknown error");
@@ -188,6 +191,7 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title }),
+        credentials: "include",
       });
       const result = await res.json();
       if (!result.success) throw new Error(result.message || "Unknown error");
@@ -213,6 +217,7 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mediaType: type, mediaPath: path }),
+        credentials: "include",
       });
       const result = await res.json();
       if (!result.success) throw new Error(result.message || "Unknown error");
@@ -231,6 +236,7 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(media),
+        credentials: "include",
       });
       const result = await res.json();
       if (!result.success) throw new Error(result.message || "Unknown error");
