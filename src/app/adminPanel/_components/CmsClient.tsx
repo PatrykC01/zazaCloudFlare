@@ -93,13 +93,57 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
   const formRefs = useRef<{ [key: string]: HTMLFormElement | null }>({}); // Refs for forms
 
   // --- Always fetch fresh content from API on mount (client-side) ---
-  // Przenieś fetchFreshContent na górę, by był dostępny wszędzie
+  // Helpers to parse fields (copy from server)
+  const parseCommaSeparated = (
+    content: string | null | undefined
+  ): string[] => {
+    if (!content) return [];
+    return content
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+  };
+  const parseJsonArray = <T,>(
+    content: string | null | undefined,
+    defaultValue: T[] = []
+  ): T[] => {
+    if (!content) return defaultValue;
+    try {
+      const parsed = JSON.parse(content);
+      return Array.isArray(parsed) ? parsed : defaultValue;
+    } catch (e) {
+      console.warn("Failed to parse JSON content:", e);
+      return defaultValue;
+    }
+  };
+
   const fetchFreshContent = async () => {
     try {
       const res = await fetch("/api/content", { credentials: "include" });
       if (res.ok) {
         const data = await res.json();
-        setContent((prev) => ({ ...prev, ...data }));
+        // --- PARSE complex fields to correct types ---
+        const parsedData = { ...data };
+        parsedData.Offers = parseJsonArray<Offer>(
+          data.Offers as string | undefined
+        );
+        parsedData.GalleryImages = parseCommaSeparated(
+          data.GalleryImages as string | undefined
+        );
+        parsedData.GalleryVideos = parseCommaSeparated(
+          data.GalleryVideos as string | undefined
+        );
+        parsedData.NaDobyBezPaliwa = parseCommaSeparated(
+          data.NaDobyBezPaliwa as string | undefined
+        );
+        parsedData.NaDobyZPaliwem = parseCommaSeparated(
+          data.NaDobyZPaliwem as string | undefined
+        );
+        parsedData.PrzejazdSkuterem = parseCommaSeparated(
+          data.PrzejazdSkuterem as string | undefined
+        );
+        // PrzejazdPontonem zostaje stringiem
+        setContent((prev) => ({ ...prev, ...parsedData }));
       }
     } catch (e) {
       // Optionally handle error
