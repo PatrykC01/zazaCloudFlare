@@ -56,7 +56,6 @@ async function upsertContent(tagName: string, tagContent: string) {
     if (!updated || (Array.isArray(updated) && updated.length === 0)) {
       throw new Error("Supabase: No row updated or inserted.");
     }
-    // Optionally: revalidatePath logic (if needed)
     return { success: true };
   } catch (error) {
     console.error(
@@ -69,6 +68,8 @@ async function upsertContent(tagName: string, tagContent: string) {
         : "Database error updating content.";
     return { success: false, error: errorMessage };
   }
+  // Fallback (should never hit)
+  return { success: false, error: "Unknown error in upsertContent." };
 }
 
 // --- Action to update a single content value ---
