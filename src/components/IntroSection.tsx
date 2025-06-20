@@ -1,6 +1,6 @@
 // src/components/IntroSection.tsx
-import React from 'react';
-import Image from 'next/image'; // Użyj next/image dla optymalizacji
+import React from "react";
+import Image from "next/image"; // Użyj next/image dla optymalizacji
 
 interface IntroSectionProps {
   text: string;
@@ -17,7 +17,11 @@ const IntroSection: React.FC<IntroSectionProps> = ({ text, imageUrl }) => {
               <div className="section-title">Na wstępie</div>
               <h2>Trochę o nas</h2>
               {/* Użyj przekazanego tekstu */}
-              <p id="AboutP">{text}</p>
+              <p id="AboutP">
+                {text || (
+                  <span style={{ color: "red" }}>Brak treści AboutP</span>
+                )}
+              </p>
             </div>
             {/* end of text-container */}
           </div>
@@ -34,7 +38,12 @@ const IntroSection: React.FC<IntroSectionProps> = ({ text, imageUrl }) => {
                 alt="O nas - zdjęcie"
                 width={500} // Przykładowa szerokość
                 height={500} // Przykładowa wysokość
-                style={{ borderRadius: '5px', aspectRatio: '1/1', width: '70%', height: 'auto' }} // Możesz dostosować style
+                style={{
+                  borderRadius: "5px",
+                  aspectRatio: "1/1",
+                  width: "70%",
+                  height: "auto",
+                }} // Możesz dostosować style
               />
             </div>
             {/* end of image-container */}
