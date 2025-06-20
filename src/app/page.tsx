@@ -34,9 +34,10 @@ interface PageContentData {
 
 // Funkcja do pobierania i formatowania danych (nadal Server Component)
 async function getContentData(): Promise<PageContentData> {
-  try {
-    // zamiast budować baseUrl, po prostu:
-    const res = await fetch("/api/content", { cache: "no-store" });
+   try {
+    const base = process.env.NEXT_PUBLIC_BASE_URL!;
+    const res = await fetch(`${base}/api/content`, { cache: "no-store" });
+    if (!res.ok) throw new Error(`Status ${res.status}`);
     const formattedData = await res.json();
 
     // Poprawne parsowanie wszystkich pól
