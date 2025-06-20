@@ -2,6 +2,7 @@
 export const runtime = "edge";
 
 import { NextResponse } from "next/server";
+import { verifyPassword } from "@/lib/crypto";
 
 // Helper: constant-time string comparison
 function safeEqual(a: string, b: string) {
@@ -11,17 +12,6 @@ function safeEqual(a: string, b: string) {
     result |= a.charCodeAt(i) ^ b.charCodeAt(i);
   }
   return result === 0;
-}
-
-// Helper: hash password with SHA-256 (Edge-compatible)
-async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  // Convert ArrayBuffer to hex string
-  return Array.from(new Uint8Array(hashBuffer))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
 }
 
 // JWT helpers (Edge-compatible, HS256)
@@ -64,12 +54,11 @@ export async function POST(req: Request) {
     );
   }
 
-  const passwordHash = await hashPassword(password);
+  // PBKDF2: hash format is "salt:hash"
+  const [salt, expectedHash] = ADMIN_PASSWORD_HASH.split(":");
+  const isPasswordValid = verifyPassword(password, salt, expectedHash);
 
-  if (
-    !safeEqual(username, ADMIN_USERNAME) ||
-    !safeEqual(passwordHash, ADMIN_PASSWORD_HASH)
-  ) {
+  if (!safeEqual(username, ADMIN_USERNAME) || !isPasswordValid) {
     return NextResponse.json(
       { message: "Nieprawidłowe dane logowania." },
       { status: 401 }
