@@ -11,6 +11,7 @@ import React, {
 import { CmsContentData } from "../(pages)/content/page"; // Import the data structure type
 import { useRouter } from "next/navigation";
 import type { Offer } from "@/types/offer";
+import LogoutButton from "./LogoutButton";
 
 // --- UI Components (Replace with your actual UI library like Shadcn/ui or use basic HTML) ---
 const Input = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
@@ -134,7 +135,7 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
           data.GalleryVideos as string | undefined
         );
         parsedData.NaDobyBezPaliwa = parseCommaSeparated(
-          data.NaDobyBezPaliwa as string | undefined
+          data.NaDobyBezPaliwem as string | undefined
         );
         parsedData.NaDobyZPaliwem = parseCommaSeparated(
           data.NaDobyZPaliwem as string | undefined
@@ -178,7 +179,7 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
       else {
         setContent((prev) => ({ ...prev, [tagName]: value ?? "" }));
         toggleEdit(tagName);
-        router.refresh();
+        // router.refresh(); // Usuń, bo router nie jest dostępny w tym miejscu lub niepotrzebny
       }
     } catch (e) {
       alert(`Error updating ${tagName}: ${e}`);
@@ -417,9 +418,29 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
   // --- Render ---
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">
-        CMS - Zarządzanie Treścią Strony
-      </h1>
+      {/* --- Górny pasek nawigacji z zakładkami i wylogowaniem --- */}
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex gap-4">
+          {/* Przykładowe zakładki, dostosuj do swojego routingu */}
+          <a
+            href="/adminPanel/content"
+            className="font-semibold hover:underline"
+          >
+            Treść
+          </a>
+          <a href="/adminPanel" className="font-semibold hover:underline">
+            Rezerwacje
+          </a>
+          <a
+            href="/adminPanel/requests"
+            className="font-semibold hover:underline"
+          >
+            Zapytania
+          </a>
+        </div>
+        <LogoutButton />
+      </div>
+      {/* --- Reszta CMS --- */}
       {/* --- Banner Section --- */}
       {renderSection(
         "Baner",
