@@ -1,4 +1,5 @@
 // Plik: src/components/IntroSection.tsx
+"use client";
 
 import React, { useState, useEffect } from 'react';
 
@@ -40,7 +41,6 @@ const IntroSection: React.FC = () => {
                             <div className="section-title">O NAS</div>
                             {/* Użyj zmiennych bezpośrednio */}
                             <p>{aboutP || 'Brak treści AboutP'}</p>
-                            <p className="testimonial-text">"Każda chwila spędzona podczas uprawiania sportów wodnych z przyjaciółmi to wyjątkowe przeżycie, które dodaje energii i radości."</p>
                         </div>
                     </div>
                     <div className="col-lg-7">
