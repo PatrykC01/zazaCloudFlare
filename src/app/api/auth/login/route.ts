@@ -57,7 +57,19 @@ export async function POST(req: Request) {
 
     // PBKDF2: hash format is "salt:hash"
     const [salt, expectedHash] = ADMIN_PASSWORD_HASH.split(":");
-    const isPasswordValid = verifyPassword(password, salt, expectedHash);
+    let isPasswordValid = false;
+    try {
+      isPasswordValid = verifyPassword(password, salt, expectedHash);
+    } catch (err) {
+      return NextResponse.json(
+        {
+          message: `Password verification error: ${
+            err && (err as Error).message
+          }`,
+        },
+        { status: 500 }
+      );
+    }
 
     if (!safeEqual(username, ADMIN_USERNAME) || !isPasswordValid) {
       return NextResponse.json(
