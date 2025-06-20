@@ -49,25 +49,30 @@ export default function RequestsClient({
 
   // Handler dla akceptacji zapytania
   const handleAccept = (requestId: number) => {
-    if (isPending) return; // Nie wykonuj akcji, jeśli inna jest w toku
-    setPendingActionId(requestId); // Ustaw ID przetwarzanego elementu
-    setError(null); // Wyczyść poprzednie błędy
+    if (isPending) return;
+    setPendingActionId(requestId);
+    setError(null);
     startTransition(async () => {
-      const result = await acceptRequest(requestId);
-      if (result.success) {
-        // Usuń zaakceptowane zapytanie z lokalnego stanu dla natychmiastowej reakcji UI
-        setRequests((prev) => prev.filter((req) => req.id !== requestId));
-        // RevalidatePath w akcji serwerowej odświeży dane przy następnym ładowaniu/nawigacji
-      } else {
-        console.error(
-          `Błąd akceptacji zapytania ${requestId}:`,
-          result.message
-        );
-        setError(
-          result.message || `Nie udało się zaakceptować zapytania ${requestId}.`
-        );
+      // Wywołaj API do akceptacji zapytania (np. PATCH/POST do /api/request)
+      try {
+        const res = await fetch(`/api/request`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: requestId, action: "accept" }),
+        });
+        const result = await res.json();
+        if (result.success) {
+          setRequests((prev) => prev.filter((req) => req.id !== requestId));
+        } else {
+          setError(
+            result.message ||
+              `Nie udało się zaakceptować zapytania ${requestId}.`
+          );
+        }
+      } catch (err) {
+        setError(`Nie udało się zaakceptować zapytania ${requestId}.`);
       }
-      setPendingActionId(null); // Zdejmij blokadę ID
+      setPendingActionId(null);
     });
   };
 
@@ -77,15 +82,22 @@ export default function RequestsClient({
     setPendingActionId(requestId);
     setError(null);
     startTransition(async () => {
-      const result = await deleteRequest(requestId);
-      if (result.success) {
-        // Usuń odrzucone zapytanie z lokalnego stanu
-        setRequests((prev) => prev.filter((req) => req.id !== requestId));
-      } else {
-        console.error(`Błąd usuwania zapytania ${requestId}:`, result.message);
-        setError(
-          result.message || `Nie udało się usunąć zapytania ${requestId}.`
-        );
+      try {
+        const res = await fetch(`/api/request`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: requestId }),
+        });
+        const result = await res.json();
+        if (result.success) {
+          setRequests((prev) => prev.filter((req) => req.id !== requestId));
+        } else {
+          setError(
+            result.message || `Nie udało się usunąć zapytania ${requestId}.`
+          );
+        }
+      } catch (err) {
+        setError(`Nie udało się usunąć zapytania ${requestId}.`);
       }
       setPendingActionId(null);
     });
