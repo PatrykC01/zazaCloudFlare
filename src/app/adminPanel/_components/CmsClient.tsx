@@ -1,7 +1,13 @@
 // app/cms/CmsClient.tsx
 "use client";
 
-import React, { useState, useTransition, useRef, FormEvent } from "react";
+import React, {
+  useState,
+  useTransition,
+  useRef,
+  FormEvent,
+  useEffect,
+} from "react";
 import { CmsContentData } from "../(pages)/content/page"; // Import the data structure type
 import { useRouter } from "next/navigation";
 import type { Offer } from "@/types/offer";
@@ -86,6 +92,23 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
   const [editModes, setEditModes] = useState<EditModes>({});
   const formRefs = useRef<{ [key: string]: HTMLFormElement | null }>({}); // Refs for forms
 
+  // --- Always fetch fresh content from API on mount (client-side) ---
+  // Przenieś fetchFreshContent na górę, by był dostępny wszędzie
+  const fetchFreshContent = async () => {
+    try {
+      const res = await fetch("/api/content", { credentials: "include" });
+      if (res.ok) {
+        const data = await res.json();
+        setContent((prev) => ({ ...prev, ...data }));
+      }
+    } catch (e) {
+      // Optionally handle error
+    }
+  };
+  useEffect(() => {
+    fetchFreshContent();
+  }, []);
+
   // --- Handlers ---
   const toggleEdit = (section: string) => {
     setEditModes((prev) => ({ ...prev, [section]: !prev[section] }));
@@ -156,8 +179,13 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
         ...Object.fromEntries(updates.map((u) => [u.tagName, u.tagContent])),
       }));
       if (editModes[sectionKey]) toggleEdit(sectionKey);
+      // --- automatyczne odświeżenie danych po zapisie ---
+      setTimeout(() => {
+        fetchFreshContent();
+      }, 500); // 0.5 sekundy po zapisie pobierz świeże dane
+      // ---
       alert(`Section ${sectionKey} saved successfully!`);
-      router.refresh();
+      // router.refresh(); // nie odświeżaj całej strony, tylko dane
     } catch (e) {
       alert(`Error saving section ${sectionKey}: ${e}`);
     }
@@ -176,7 +204,9 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
       const result = await res.json();
       if (!result.success) throw new Error(result.message || "Unknown error");
       alert("Oferta dodana!");
-      router.refresh();
+      setTimeout(() => {
+        fetchFreshContent();
+      }, 500);
     } catch (e) {
       alert(`Błąd dodawania oferty: ${e}`);
     }
@@ -196,12 +226,36 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
       const result = await res.json();
       if (!result.success) throw new Error(result.message || "Unknown error");
       alert("Oferta usunięta!");
-      router.refresh();
+      setTimeout(() => {
+        fetchFreshContent();
+      }, 500);
     } catch (e) {
       alert(`Błąd usuwania oferty: ${e}`);
     }
   };
 
+  // Dodaj media przez fetch do /api/media
+  const handleAddMedia = async (formData: FormData) => {
+    try {
+      const media = Object.fromEntries(formData.entries());
+      const res = await fetch("/api/media", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(media),
+        credentials: "include",
+      });
+      const result = await res.json();
+      if (!result.success) throw new Error(result.message || "Unknown error");
+      alert("Media dodane!");
+      setTimeout(() => {
+        fetchFreshContent();
+      }, 500);
+    } catch (e) {
+      alert(`Błąd dodawania mediów: ${e}`);
+    }
+  };
+
+  // Usuń media przez fetch do /api/media
   const handleDeleteMedia = async (type: "IMG" | "VID", path: string) => {
     if (
       !confirm(
@@ -222,28 +276,11 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
       const result = await res.json();
       if (!result.success) throw new Error(result.message || "Unknown error");
       alert("Media usunięte!");
-      router.refresh();
+      setTimeout(() => {
+        fetchFreshContent();
+      }, 500);
     } catch (e) {
       alert(`Błąd usuwania mediów: ${e}`);
-    }
-  };
-
-  // Dodaj media przez fetch do /api/media
-  const handleAddMedia = async (formData: FormData) => {
-    try {
-      const media = Object.fromEntries(formData.entries());
-      const res = await fetch("/api/media", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(media),
-        credentials: "include",
-      });
-      const result = await res.json();
-      if (!result.success) throw new Error(result.message || "Unknown error");
-      alert("Media dodane!");
-      router.refresh();
-    } catch (e) {
-      alert(`Błąd dodawania mediów: ${e}`);
     }
   };
 
