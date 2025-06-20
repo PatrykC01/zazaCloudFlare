@@ -1,6 +1,7 @@
 // app/cms/layout.tsx
 import Link from 'next/link';
 import React from 'react';
+import LogoutButton from './_components/LogoutButton';
 
 export default function CmsLayout({
   children,
@@ -28,6 +29,7 @@ export default function CmsLayout({
              <span className="oi oi-wrench mr-2" />
              CMS
           </Link>
+          <LogoutButton />
         </nav>
       </aside>
 

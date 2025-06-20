@@ -27,7 +27,7 @@ export default async function AdminPanelPage({
         <h1 className="text-3xl font-bold">
           Panel Administratora – Rezerwacje
         </h1>
-        <LogoutButton />
+   
       </div>
       <ReservationsClient initialReservations={initialReservations} />
     </div>

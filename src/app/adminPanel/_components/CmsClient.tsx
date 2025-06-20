@@ -419,27 +419,7 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
   return (
     <div className="container mx-auto p-4">
       {/* --- Górny pasek nawigacji z zakładkami i wylogowaniem --- */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex gap-4">
-          {/* Przykładowe zakładki, dostosuj do swojego routingu */}
-          <a
-            href="/adminPanel/content"
-            className="font-semibold hover:underline"
-          >
-            Treść
-          </a>
-          <a href="/adminPanel" className="font-semibold hover:underline">
-            Rezerwacje
-          </a>
-          <a
-            href="/adminPanel/requests"
-            className="font-semibold hover:underline"
-          >
-            Zapytania
-          </a>
-        </div>
-        <LogoutButton />
-      </div>
+    
       {/* --- Reszta CMS --- */}
       {/* --- Banner Section --- */}
       {renderSection(
