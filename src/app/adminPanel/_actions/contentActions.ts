@@ -196,7 +196,7 @@ export async function addMediaAction(formData: FormData) {
       console.log(`  -> Updating ${tagName} with: ${newTagContent}`);
       return await upsertContent(tagName, newTagContent);
     } catch (error) {
-      console.error(`Error adding media to ${tagName}:", error);
+      console.error(`Error adding media to ${tagName}:`, error);
       return { success: false, error: "Database error adding media." };
     }
   } catch (error) {
@@ -239,7 +239,8 @@ export async function deleteMediaAction(
       console.log(`  -> Updating ${tagName} after deletion: ${newTagContent}`);
       return await upsertContent(tagName, newTagContent);
     } catch (error) {
-      console.error(`Error deleting media from ${tagName}:", error);
+      // PONIŻEJ ZNAJDUJE SIĘ POPRAWIONA LINIA
+      console.error(`Error deleting media from ${tagName}:`, error);
       return { success: false, error: "Database error deleting media." };
     }
   } catch (error) {
