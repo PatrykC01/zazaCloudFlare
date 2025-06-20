@@ -1,8 +1,11 @@
 // src/app/api/reservation/route.ts
 import { NextResponse } from "next/server";
 import { supabaseFetch } from "@/lib/supabaseFetch";
+import { cookies } from "next/headers";
+import { verifyJwt } from "@/lib/crypto";
 
 export const runtime = "edge";
+export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   try {
@@ -59,5 +62,129 @@ export async function POST(request: Request) {
       errorMessage = error.message;
     }
     return NextResponse.json({ message: errorMessage }, { status: 500 });
+  }
+}
+
+// GET: Pobierz wszystkie rezerwacje (tylko admin)
+export async function GET() {
+  try {
+    const cookieStore = cookies();
+    const token = cookieStore.get("zaza_admin_session")?.value;
+    if (!token)
+      return NextResponse.json(
+        { success: false, message: "Brak sesji" },
+        { status: 401 }
+      );
+    const session = await verifyJwt(token);
+    if (!session || session.role !== "admin")
+      return NextResponse.json(
+        { success: false, message: "Brak uprawnień" },
+        { status: 403 }
+      );
+
+    const reservations = await supabaseFetch<any[]>("reservation", {
+      method: "GET",
+      admin: true,
+      query: "order=startDate.asc",
+    });
+    return NextResponse.json(reservations, { status: 200 });
+  } catch (error) {
+    return NextResponse.json(
+      { message: "Błąd pobierania rezerwacji" },
+      {
+        status: 500,
+      }
+    );
+  }
+}
+
+// PATCH: Aktualizuj rezerwację (tylko admin)
+export async function PATCH(request: Request) {
+  try {
+    const cookieStore = cookies();
+    const token = cookieStore.get("zaza_admin_session")?.value;
+    if (!token)
+      return NextResponse.json(
+        { success: false, message: "Brak sesji" },
+        { status: 401 }
+      );
+    const session = await verifyJwt(token);
+    if (!session || session.role !== "admin")
+      return NextResponse.json(
+        { success: false, message: "Brak uprawnień" },
+        { status: 403 }
+      );
+
+    const { id, ...data } = await request.json();
+    if (!id)
+      return NextResponse.json(
+        { success: false, message: "Brak id" },
+        {
+          status: 400,
+        }
+      );
+    const startDateISO =
+      typeof data.startDate === "string"
+        ? data.startDate
+        : new Date(data.startDate).toISOString();
+    const endDateISO =
+      typeof data.endDate === "string"
+        ? data.endDate
+        : new Date(data.endDate).toISOString();
+    await supabaseFetch("reservation", {
+      method: "PATCH",
+      admin: true,
+      query: `id=eq.${id}`,
+      body: JSON.stringify({
+        ...data,
+        startDate: startDateISO,
+        endDate: endDateISO,
+      }),
+    });
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json(
+      { success: false, message: "Błąd aktualizacji rezerwacji" },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE: Usuń rezerwację (tylko admin)
+export async function DELETE(request: Request) {
+  try {
+    const cookieStore = cookies();
+    const token = cookieStore.get("zaza_admin_session")?.value;
+    if (!token)
+      return NextResponse.json(
+        { success: false, message: "Brak sesji" },
+        { status: 401 }
+      );
+    const session = await verifyJwt(token);
+    if (!session || session.role !== "admin")
+      return NextResponse.json(
+        { success: false, message: "Brak uprawnień" },
+        { status: 403 }
+      );
+
+    const { id } = await request.json();
+    if (!id)
+      return NextResponse.json(
+        { success: false, message: "Brak id" },
+        {
+          status: 400,
+        }
+      );
+    await supabaseFetch("reservation", {
+      method: "DELETE",
+      admin: true,
+      query: `id=eq.${id}`,
+    });
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json(
+      { success: false, message: "Błąd usuwania rezerwacji" },
+      { status: 500 }
+    );
   }
 }

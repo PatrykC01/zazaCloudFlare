@@ -1,6 +1,6 @@
 // app/cms/_components/ReservationForm.tsx
 import React, { useState, useEffect } from "react";
-import { ReservationData } from "../_actions/reservationActions";
+import type { ReservationData } from "@/types/reservation";
 
 interface ReservationFormProps {
   onSubmit: (data: ReservationData) => Promise<void> | void;
@@ -78,7 +78,9 @@ export default function ReservationForm({
       const updatedData = { ...prev, [name]: value };
       if (name === "startDate" && value) {
         const newStartDate = new Date(value);
-        const newEndDate = formatDateTimeLocal(new Date(newStartDate.getTime() + 60 * 60 * 1000));
+        const newEndDate = formatDateTimeLocal(
+          new Date(newStartDate.getTime() + 60 * 60 * 1000)
+        );
         updatedData.endDate = newEndDate;
       }
       return updatedData;
@@ -93,45 +95,50 @@ export default function ReservationForm({
     }
   };
 
-const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-  // Prosta walidacja po stronie klienta
-  const newErrors: Record<string, string> = {};
-  if (!formData.firstName) newErrors.firstName = "Imię jest wymagane";
-  if (!formData.lastName) newErrors.lastName = "Nazwisko jest wymagane";
-  if (!formData.phoneNumber) {
-    newErrors.phoneNumber = "Numer telefonu jest wymagany";
-  } else if (!/^\d{3}-\d{3}-\d{3}$/.test(formData.phoneNumber)) {
-    newErrors.phoneNumber = "Nieprawidłowy format numeru (xxx-xxx-xxx)";
-  }
-  if (!formData.startDate) newErrors.startDate = "Data początkowa jest wymagana";
-  if (!formData.endDate) newErrors.endDate = "Data końcowa jest wymagana";
-  if (
-    formData.startDate &&
-    formData.endDate &&
-    new Date(formData.endDate) <= new Date(formData.startDate)
-  ) {
-    newErrors.endDate = "Data końcowa musi być późniejsza niż początkowa";
-  }
+    // Prosta walidacja po stronie klienta
+    const newErrors: Record<string, string> = {};
+    if (!formData.firstName) newErrors.firstName = "Imię jest wymagane";
+    if (!formData.lastName) newErrors.lastName = "Nazwisko jest wymagane";
+    if (!formData.phoneNumber) {
+      newErrors.phoneNumber = "Numer telefonu jest wymagany";
+    } else if (!/^\d{3}-\d{3}-\d{3}$/.test(formData.phoneNumber)) {
+      newErrors.phoneNumber = "Nieprawidłowy format numeru (xxx-xxx-xxx)";
+    }
+    if (!formData.startDate)
+      newErrors.startDate = "Data początkowa jest wymagana";
+    if (!formData.endDate) newErrors.endDate = "Data końcowa jest wymagana";
+    if (
+      formData.startDate &&
+      formData.endDate &&
+      new Date(formData.endDate) <= new Date(formData.startDate)
+    ) {
+      newErrors.endDate = "Data końcowa musi być późniejsza niż początkowa";
+    }
 
-  if (Object.keys(newErrors).length > 0) {
-    setErrors(newErrors);
-    return;
-  }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
 
-  setErrors({});
-  // Konwersja dat do formatu ISO
-  const startDateISO = formData.startDate ? new Date(formData.startDate).toISOString() : "";
-  const endDateISO = formData.endDate ? new Date(formData.endDate).toISOString() : "";
+    setErrors({});
+    // Konwersja dat do formatu ISO
+    const startDateISO = formData.startDate
+      ? new Date(formData.startDate).toISOString()
+      : "";
+    const endDateISO = formData.endDate
+      ? new Date(formData.endDate).toISOString()
+      : "";
 
-  const dataToSend = {
-    ...formData,
-    startDate: startDateISO,
-    endDate: endDateISO,
+    const dataToSend = {
+      ...formData,
+      startDate: startDateISO,
+      endDate: endDateISO,
+    };
+    onSubmit(dataToSend);
   };
-  onSubmit(dataToSend);
-};
 
   return (
     <form onSubmit={handleSubmit} className="needs-validation space-y-4">

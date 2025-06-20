@@ -40,3 +40,54 @@ export async function GET(request: Request) {
     );
   }
 }
+
+// POST: Upsert content (Edge-compatible, JWT-protected)
+import { cookies } from "next/headers";
+import { verifyJwt } from "@/lib/crypto";
+
+export async function POST(request: Request) {
+  try {
+    // 1. Sprawdź JWT sesji admina
+    const cookieStore = cookies();
+    const token = cookieStore.get("zaza_admin_session")?.value;
+    if (!token) {
+      return NextResponse.json(
+        { success: false, message: "Brak sesji" },
+        { status: 401 }
+      );
+    }
+    const session = await verifyJwt(token);
+    if (!session || session.role !== "admin") {
+      return NextResponse.json(
+        { success: false, message: "Brak uprawnień" },
+        { status: 403 }
+      );
+    }
+
+    // 2. Odczytaj dane z body
+    const { tagName, tagContent } = await request.json();
+    if (!tagName || typeof tagContent !== "string") {
+      return NextResponse.json(
+        { success: false, message: "Nieprawidłowe dane" },
+        { status: 400 }
+      );
+    }
+
+    // 3. Upsert do Supabase REST API
+    const upsertResult = await supabaseFetch("content", {
+      method: "POST",
+      admin: true,
+      body: JSON.stringify([{ tagName, tagContent }]),
+      headers: { Prefer: "resolution=merge-duplicates" },
+    });
+
+    // 4. Zwróć sukces
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("API /api/content POST error:", error);
+    return NextResponse.json(
+      { success: false, message: "Błąd zapisu" },
+      { status: 500 }
+    );
+  }
+}

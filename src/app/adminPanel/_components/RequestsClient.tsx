@@ -2,11 +2,6 @@
 "use client";
 
 import React, { useState, useTransition, useCallback, useEffect } from "react";
-import {
-  getRequests,
-  deleteRequest,
-  acceptRequest,
-} from "../_actions/reservationActions";
 import { CheckIcon, XMarkIcon, ArrowPathIcon } from "@heroicons/react/24/solid"; // Ikony dla przycisków
 
 // Define a local Request type based on your Supabase REST API response

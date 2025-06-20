@@ -13,7 +13,7 @@ import ContactSection from "@/components/ContactSection";
 import Preloader from "@/components/Preloader";
 import Script from "next/script";
 import { supabaseFetch } from "@/lib/supabaseFetch"; // Import supabaseFetch
-import type { Offer } from "@/app/adminPanel/_actions/contentActions"; // Import Offer type from the correct location
+import type { Offer } from "@/types/offer"; // Import tylko typ Offer
 
 export const runtime = "edge";
 // Typ dla danych pobranych z bazy i przetworzonych

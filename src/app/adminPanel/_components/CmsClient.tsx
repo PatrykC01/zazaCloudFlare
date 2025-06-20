@@ -3,16 +3,8 @@
 
 import React, { useState, useTransition, useRef, FormEvent } from "react";
 import { CmsContentData } from "../(pages)/content/page"; // Import the data structure type
-import {
-  updateSingleContentAction,
-  updateMultipleContentAction,
-  addMediaAction,
-  deleteMediaAction,
-  addOfferAction,
-  deleteOfferAction,
-  Offer, // Import Offer type
-} from "../_actions/contentActions";
 import { useRouter } from "next/navigation";
+import type { Offer } from "@/types/offer";
 
 // --- UI Components (Replace with your actual UI library like Shadcn/ui or use basic HTML) ---
 const Input = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
@@ -99,23 +91,32 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
     setEditModes((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
-  const handleSimpleSubmit = (
+  // ZAMIANA: fetch do /api/content zamiast server action
+  const handleSimpleSubmit = async (
     tagName: string,
     value: string | null | undefined
   ) => {
-    startTransition(async () => {
-      const result = await updateSingleContentAction(tagName, value);
-      if (!result.success) alert(`Error updating ${tagName}: ${result.error}`);
+    try {
+      const res = await fetch("/api/content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tagName, tagContent: value ?? "" }),
+      });
+      const result = await res.json();
+      if (!result.success)
+        alert(`Error updating ${tagName}: ${result.message || "Unknown error"}`);
       else {
-        // Optimistic update or rely on revalidation
         setContent((prev) => ({ ...prev, [tagName]: value ?? "" }));
-        toggleEdit(tagName); // Close edit mode on success
+        toggleEdit(tagName);
         router.refresh();
       }
-    });
+    } catch (e) {
+      alert(`Error updating ${tagName}: ${e}`);
+    }
   };
 
-  const handleFormSubmit = (
+  // ZAMIANA: fetch do /api/content dla wielu pól
+  const handleFormSubmit = async (
     sectionKey: string,
     event?: FormEvent<HTMLFormElement>
   ) => {
@@ -128,177 +129,111 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
     }
     const formData = new FormData(form);
 
-    console.log(`Submitting form for section: ${sectionKey}`);
-    // Log FormData entries for debugging
-    // for (let [key, value] of formData.entries()) {
-    //      console.log(`${key}: ${value}`);
-    // }
-
-    let action: (formData: FormData) => Promise<any>;
-
-    // Choose the correct action based on the section
-    switch (sectionKey) {
-      case "addOffer":
-        action = addOfferAction;
-        break;
-      case "addMedia":
-        action = addMediaAction;
-        break;
-      default:
-        // Assume it's a multi-content update section
-        action = updateMultipleContentAction;
-        break;
+    // Zbierz wszystkie pola do upsertu
+    const updates: { tagName: string; tagContent: string }[] = [];
+    for (const [key, value] of formData.entries()) {
+      updates.push({ tagName: key, tagContent: String(value) });
     }
 
-    startTransition(async () => {
-      const result = await action(formData); // Wyślij dane na serwer
-
-      if (!result.success) {
-        alert(
-          `Error saving section ${sectionKey}: ${
-            result.error || "Unknown error"
-          }`
-        );
-      } else {
-        // SUKCES!
-        // 1. Przygotuj nowe dane do aktualizacji stanu lokalnego
-        const updatedLocalContentPart: Partial<CmsContentData> = {};
-
-        if (sectionKey === "addOffer") {
-          // Serwer powinien zwrócić dodaną ofertę lub całą listę
-          // Dla uproszczenia, jeśli serwer nie zwraca, budujemy ją z formData
-          // Lepsze byłoby, gdyby `result.data` zawierało nową ofertę lub zaktualizowaną listę
-          const newOffer: Offer = {
-            /* ... zbuduj z formData ... */
-            img: (formData.get("img") as string) || "",
-            title: (formData.get("title") as string) || "",
-            description: (formData.get("description") as string) || "",
-            features: ((formData.get("features") as string) || "")
-              .split(",")
-              .map((f) => f.trim())
-              .filter((f) => f),
-            price: (formData.get("price") as string) || "",
-          };
-          setContent((prev) => ({
-            ...prev,
-            Offers: [...(prev.Offers || []), newOffer],
-          }));
-          form.reset();
-        } else if (sectionKey === "addMedia") {
-          // Podobnie jak z ofertami, serwer mógłby zwrócić info o dodanym medium
-          const mediaType = formData.get("mediaType") as "IMG" | "VID";
-          const mediaPath = formData.get("mediaPath") as string;
-          if (mediaType === "IMG") {
-            setContent((prev) => ({
-              ...prev,
-              GalleryImages: [...(prev.GalleryImages || []), mediaPath],
-            }));
-          } else {
-            setContent((prev) => ({
-              ...prev,
-              GalleryVideos: [...(prev.GalleryVideos || []), mediaPath],
-            }));
-          }
-          form.reset();
-        } else {
-          // Dla updateMultipleContentAction i updateSingleContentAction (w handleSimpleSubmit)
-          // Przejdź przez formData i zaktualizuj odpowiednie pola
-          // To jest KLUCZOWE dla sekcji cenników i kontaktu, itp.
-          const newValues: Partial<CmsContentData> = {};
-          let newNaDobyBezPaliwa: string[] | undefined;
-          let newNaDobyZPaliwem: string[] | undefined;
-          let newPrzejazdSkuterem: string[] | undefined;
-
-          for (const [key, value] of formData.entries()) {
-            // Mapowanie nazw pól formularza na strukturę CmsContentData dla cenników
-            if (key.startsWith("CenaBezPaliwa")) {
-              if (!newNaDobyBezPaliwa)
-                newNaDobyBezPaliwa = [
-                  ...(content.NaDobyBezPaliwa || Array(5).fill("")),
-                ];
-              const index = parseInt(key.replace("CenaBezPaliwa", ""), 10) - 1;
-              if (index >= 0 && index < 5)
-                newNaDobyBezPaliwa[index] = value as string;
-            } else if (key.startsWith("CenaZPaliwem")) {
-              if (!newNaDobyZPaliwem)
-                newNaDobyZPaliwem = [
-                  ...(content.NaDobyZPaliwem || Array(6).fill("")),
-                ];
-              const index = parseInt(key.replace("CenaZPaliwem", ""), 10) - 1;
-              if (index >= 0 && index < 6)
-                newNaDobyZPaliwem[index] = value as string;
-            } else if (key.startsWith("Skuter")) {
-              if (!newPrzejazdSkuterem)
-                newPrzejazdSkuterem = [
-                  ...(content.PrzejazdSkuterem || Array(3).fill("")),
-                ];
-              const mapKeyToIndex: { [key: string]: number } = {
-                Skuter10min: 0,
-                Skuter30min: 1,
-                Skuter60min: 2,
-              };
-              if (key in mapKeyToIndex)
-                newPrzejazdSkuterem[mapKeyToIndex[key]] = value as string;
-            } else if (key === "PrzejazdPontonem") {
-              (newValues as any)[key] = value; // Proste przypisanie
-            }
-            // Dla innych prostych pól (np. AboutP, AboutIMG, FooterLocation, HeaderIMG, Map)
-            else if (key in content) {
-              (newValues as any)[key] = value;
-            }
-          }
-          if (newNaDobyBezPaliwa)
-            newValues.NaDobyBezPaliwa = newNaDobyBezPaliwa;
-          if (newNaDobyZPaliwem) newValues.NaDobyZPaliwem = newNaDobyZPaliwem;
-          if (newPrzejazdSkuterem)
-            newValues.PrzejazdSkuterem = newPrzejazdSkuterem;
-
-          setContent((prev) => ({ ...prev, ...newValues }));
-        }
-
-        // 2. Opcjonalne: zamknij tryb edycji
-        if (
-          editModes[sectionKey] &&
-          sectionKey !== "addOffer" &&
-          sectionKey !== "addMedia"
-        ) {
-          toggleEdit(sectionKey);
-        }
-
-        alert(`Section ${sectionKey} saved successfully!`);
-
-        // 3. Odśwież dane serwerowe dla spójności i dla innych komponentów (ROUTER.REFRESH)
-        router.refresh();
+    try {
+      // Wysyłaj każde pole osobno (możesz też zrobić batch, jeśli API obsługuje)
+      for (const update of updates) {
+        const res = await fetch("/api/content", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(update),
+        });
+        const result = await res.json();
+        if (!result.success) throw new Error(result.message || "Unknown error");
       }
-    });
+      // Sukces: zaktualizuj lokalny stan
+      setContent((prev) => ({
+        ...prev,
+        ...Object.fromEntries(updates.map((u) => [u.tagName, u.tagContent])),
+      }));
+      if (editModes[sectionKey]) toggleEdit(sectionKey);
+      alert(`Section ${sectionKey} saved successfully!`);
+      router.refresh();
+    } catch (e) {
+      alert(`Error saving section ${sectionKey}: ${e}`);
+    }
   };
 
-  const handleDeleteMedia = (type: "IMG" | "VID", path: string) => {
+  // Dodaj ofertę przez fetch do /api/offer
+  const handleAddOffer = async (formData: FormData) => {
+    try {
+      const offer = Object.fromEntries(formData.entries());
+      const res = await fetch("/api/offer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(offer),
+      });
+      const result = await res.json();
+      if (!result.success) throw new Error(result.message || "Unknown error");
+      alert("Oferta dodana!");
+      router.refresh();
+    } catch (e) {
+      alert(`Błąd dodawania oferty: ${e}`);
+    }
+  };
+
+  // Usuń ofertę przez fetch do /api/offer
+  const handleDeleteOffer = async (title: string) => {
+    if (!confirm(`Are you sure you want to delete the offer: ${title}?`)) return;
+    try {
+      const res = await fetch("/api/offer", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title }),
+      });
+      const result = await res.json();
+      if (!result.success) throw new Error(result.message || "Unknown error");
+      alert("Oferta usunięta!");
+      router.refresh();
+    } catch (e) {
+      alert(`Błąd usuwania oferty: ${e}`);
+    }
+  };
+
+  const handleDeleteMedia = async (type: "IMG" | "VID", path: string) => {
     if (
       !confirm(
         `Are you sure you want to delete this ${
           type === "IMG" ? "image" : "video"
         }: ${path}?`
       )
-    )
       return;
-    startTransition(async () => {
-      const result = await deleteMediaAction(type, path);
-      if (!result.success) alert(`Error deleting media: ${result.error}`);
-      // Rely on revalidation
-      else router.refresh();
-    });
+    try {
+      const res = await fetch("/api/media", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mediaType: type, mediaPath: path }),
+      });
+      const result = await res.json();
+      if (!result.success) throw new Error(result.message || "Unknown error");
+      alert("Media usunięte!");
+      router.refresh();
+    } catch (e) {
+      alert(`Błąd usuwania mediów: ${e}`);
+    }
   };
 
-  const handleDeleteOffer = (title: string) => {
-    if (!confirm(`Are you sure you want to delete the offer: ${title}?`))
-      return;
-    startTransition(async () => {
-      const result = await deleteOfferAction(title);
-      if (!result.success) alert(`Error deleting offer: ${result.error}`);
-      // Rely on revalidation
-      else router.refresh();
-    });
+  // Dodaj media przez fetch do /api/media
+  const handleAddMedia = async (formData: FormData) => {
+    try {
+      const media = Object.fromEntries(formData.entries());
+      const res = await fetch("/api/media", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(media),
+      });
+      const result = await res.json();
+      if (!result.success) throw new Error(result.message || "Unknown error");
+      alert("Media dodane!");
+      router.refresh();
+    } catch (e) {
+      alert(`Błąd dodawania mediów: ${e}`);
+    }
   };
 
   // Helper to get current value for pricing fields, considering edit mode form data or fetched data
@@ -321,7 +256,7 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
     formRenderer?: () => React.ReactNode, // Optional dedicated form renderer
     formAction: (
       formData: FormData
-    ) => Promise<any> = updateMultipleContentAction // Default action
+    ) => Promise<any> = async () => {} // nie używamy już server action
   ) => (
     <div className="border shadow-lg p-4 my-4 bg-gray-50 relative">
       <h2 className="text-xl font-semibold border-b mb-4 pb-2">{title}</h2>
@@ -501,7 +436,14 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
           ref={(el) => {
             formRefs.current["addOffer"] = el;
           }}
-          onSubmit={(e) => handleFormSubmit("addOffer", e)}
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const form = formRefs.current["addOffer"];
+            if (!form) return;
+            const formData = new FormData(form);
+            await handleAddOffer(formData);
+            form.reset();
+          }}
           className="border p-4 bg-white rounded grid grid-cols-1 md:grid-cols-2 gap-4"
         >
           <div>
@@ -617,7 +559,14 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
           ref={(el) => {
             formRefs.current["addMedia"] = el;
           }}
-          onSubmit={(e) => handleFormSubmit("addMedia", e)}
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const form = formRefs.current["addMedia"];
+            if (!form) return;
+            const formData = new FormData(form);
+            await handleAddMedia(formData);
+            form.reset();
+          }}
           className="border p-4 bg-white rounded flex flex-col md:flex-row gap-4 items-end"
         >
           <div className="flex-grow">

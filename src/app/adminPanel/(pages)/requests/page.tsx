@@ -1,6 +1,5 @@
 export const runtime = "edge";
 
-import { getRequests } from "../../_actions/reservationActions";
 import RequestsClient from "../../_components/RequestsClient";
 
 // Wymuszenie dynamicznego renderowania, aby dane były zawsze świeże
