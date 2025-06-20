@@ -1,3 +1,5 @@
+export const runtime = "edge";
+
 // app/cms/page.tsx
 import { supabaseFetch } from "@/lib/supabaseFetch";
 import CmsClient from "../../_components/CmsClient"; // We will create this next
