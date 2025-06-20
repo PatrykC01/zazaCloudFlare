@@ -1,7 +1,7 @@
 // middleware.ts
-export const runtime = "experimental-edge";
+import type { NextRequest } from "next/server";
 
-import { NextResponse } from "next/server";
+export const runtime = "experimental-edge";
 
 // JWT verify helper (Edge-compatible, HS256)
 async function verifyJWT(token: string, secret: string): Promise<any | null> {
@@ -38,7 +38,7 @@ async function verifyJWT(token: string, secret: string): Promise<any | null> {
   }
 }
 
-export default async function middleware(req) {
+export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const session = req.cookies.get("admin_session");
   const ADMIN_JWT_SECRET = process.env.ADMIN_JWT_SECRET;
