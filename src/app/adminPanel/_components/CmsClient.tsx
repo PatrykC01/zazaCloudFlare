@@ -104,7 +104,9 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
       });
       const result = await res.json();
       if (!result.success)
-        alert(`Error updating ${tagName}: ${result.message || "Unknown error"}`);
+        alert(
+          `Error updating ${tagName}: ${result.message || "Unknown error"}`
+        );
       else {
         setContent((prev) => ({ ...prev, [tagName]: value ?? "" }));
         toggleEdit(tagName);
@@ -179,7 +181,8 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
 
   // Usuń ofertę przez fetch do /api/offer
   const handleDeleteOffer = async (title: string) => {
-    if (!confirm(`Are you sure you want to delete the offer: ${title}?`)) return;
+    if (!confirm(`Are you sure you want to delete the offer: ${title}?`))
+      return;
     try {
       const res = await fetch("/api/offer", {
         method: "DELETE",
@@ -202,7 +205,9 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
           type === "IMG" ? "image" : "video"
         }: ${path}?`
       )
+    ) {
       return;
+    }
     try {
       const res = await fetch("/api/media", {
         method: "DELETE",
@@ -254,9 +259,7 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
     sectionKey: string,
     contentRenderer: () => React.ReactNode,
     formRenderer?: () => React.ReactNode, // Optional dedicated form renderer
-    formAction: (
-      formData: FormData
-    ) => Promise<any> = async () => {} // nie używamy już server action
+    formAction: (formData: FormData) => Promise<any> = async () => {} // nie używamy już server action
   ) => (
     <div className="border shadow-lg p-4 my-4 bg-gray-50 relative">
       <h2 className="text-xl font-semibold border-b mb-4 pb-2">{title}</h2>
