@@ -42,43 +42,46 @@ async function signJWT(payload: object, secret: string): Promise<string> {
 }
 
 export async function POST(req: Request) {
-  const { username, password } = await req.json();
-  const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
-  const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH;
-  const ADMIN_JWT_SECRET = process.env.ADMIN_JWT_SECRET;
+  try {
+    const { username, password } = await req.json();
+    const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
+    const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH;
+    const ADMIN_JWT_SECRET = process.env.ADMIN_JWT_SECRET;
 
-  if (!ADMIN_USERNAME || !ADMIN_PASSWORD_HASH || !ADMIN_JWT_SECRET) {
+    if (!ADMIN_USERNAME || !ADMIN_PASSWORD_HASH || !ADMIN_JWT_SECRET) {
+      return NextResponse.json(
+        { message: "Brak konfiguracji admina." },
+        { status: 500 }
+      );
+    }
+
+    // PBKDF2: hash format is "salt:hash"
+    const [salt, expectedHash] = ADMIN_PASSWORD_HASH.split(":");
+    const isPasswordValid = verifyPassword(password, salt, expectedHash);
+
+    if (!safeEqual(username, ADMIN_USERNAME) || !isPasswordValid) {
+      return NextResponse.json(
+        { message: "Nieprawidłowa nazwa użytkownika lub hasło." },
+        { status: 401 }
+      );
+    }
+
+    // JWT: ważny 12h
+    const exp = Math.floor(Date.now() / 1000) + 60 * 60 * 12;
+    const token = await signJWT({ role: "admin", exp }, ADMIN_JWT_SECRET);
+
+    const res = NextResponse.json({ success: true });
+    res.headers.set(
+      "Set-Cookie",
+      `admin_session=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${
+        60 * 60 * 12
+      }`
+    );
+    return res;
+  } catch (error) {
     return NextResponse.json(
-      { message: "Brak konfiguracji admina." },
+      { message: "Internal Server Error" },
       { status: 500 }
     );
   }
-
-  // PBKDF2: hash format is "salt:hash"
-  const [salt, expectedHash] = ADMIN_PASSWORD_HASH.split(":");
-  const isPasswordValid = verifyPassword(password, salt, expectedHash);
-
-  if (!safeEqual(username, ADMIN_USERNAME) || !isPasswordValid) {
-    return NextResponse.json(
-      { message: "Nieprawidłowe dane logowania." },
-      { status: 401 }
-    );
-  }
-
-  // JWT payload: username, issued at, expires in 1 day
-  const now = Math.floor(Date.now() / 1000);
-  const payload = {
-    username,
-    iat: now,
-    exp: now + 60 * 60 * 24, // 1 day
-    role: "admin",
-  };
-  const jwt = await signJWT(payload, ADMIN_JWT_SECRET);
-
-  const res = NextResponse.json({ success: true });
-  res.headers.set(
-    "Set-Cookie",
-    `admin_session=${jwt}; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400`
-  );
-  return res;
 }
