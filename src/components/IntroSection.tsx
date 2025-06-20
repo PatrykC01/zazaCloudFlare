@@ -1,14 +1,12 @@
-// Plik: src/components/IntroSection.tsx
+// src/components/IntroSection.tsx
+import React from "react";
+import Image from "next/image"; // Użyj next/image dla optymalizacji
 
-import React from 'react';
-
-// 1. Zdefiniuj interfejs dla przyjmowanych właściwości (props)
 interface IntroSectionProps {
   text: string;
   imageUrl: string;
 }
 
-// 2. Użyj zdefiniowanego interfejsu w komponencie
 const IntroSection: React.FC<IntroSectionProps> = ({ text, imageUrl }) => {
   return (
     <div id="intro" className="basic-1">
@@ -16,21 +14,47 @@ const IntroSection: React.FC<IntroSectionProps> = ({ text, imageUrl }) => {
         <div className="row">
           <div className="col-lg-5">
             <div className="text-container">
-              <div className="section-title">O NAS</div>
-              {/* 3. Użyj propsów bezpośrednio w JSX */}
-              <p>{text || 'Brak treści AboutP'}</p>
-             
+              <div className="section-title">Na wstępie</div>
+              <h2>Trochę o nas</h2>
+              {/* Użyj przekazanego tekstu */}
+              <p id="AboutP">
+                {text || (
+                  <span style={{ color: "red" }}>Brak treści AboutP</span>
+                )}
+              </p>
             </div>
+            {/* end of text-container */}
           </div>
+          {/* end of col */}
           <div className="col-lg-7">
             <div className="image-container">
-              {/* 4. Użyj propsów bezpośrednio w JSX */}
-              <img className="img-fluid" src={imageUrl || 'images/intro-office.jpg'} alt="O nas" />
+              {/* Użyj komponentu Image z Next.js */}
+              {/* Wymiary (width, height) są wymagane, chyba że używasz fill */}
+              {/* Dostosuj wymiary do swoich potrzeb lub użyj fill i ustaw pozycjonowanie w CSS */}
+              <Image
+                id="AboutIMG"
+                className="img-fluid" // Możesz zostawić, jeśli Bootstrap tego wymaga
+                src={imageUrl}
+                alt="O nas - zdjęcie"
+                width={500} // Przykładowa szerokość
+                height={500} // Przykładowa wysokość
+                style={{
+                  borderRadius: "5px",
+                  aspectRatio: "1/1",
+                  width: "70%",
+                  height: "auto",
+                }} // Możesz dostosować style
+              />
             </div>
+            {/* end of image-container */}
           </div>
+          {/* end of col */}
         </div>
+        {/* end of row */}
       </div>
+      {/* end of container */}
     </div>
+    /* end of basic-1 */
   );
 };
 
