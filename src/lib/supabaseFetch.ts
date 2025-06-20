@@ -9,7 +9,13 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !SUPABASE_SERVICE_ROLE_KEY) {
   throw new Error("Supabase environment variables are not set");
 }
 
-export type SupabaseTable = "content" | "reservation" | "request";
+export type SupabaseTable =
+  | "content"
+  | "reservation"
+  | "request"
+  | "gallery_images"
+  | "gallery_videos"
+  | "offers";
 // Add more table names as needed
 
 interface SupabaseFetchOptions {
