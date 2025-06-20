@@ -35,7 +35,9 @@ export default function RequestsClient({
     setIsLoading(true);
     setError(null); // Resetuj błąd przed odświeżeniem
     try {
-      const updatedRequests = await getRequests();
+      // Pobierz aktualne zapytania przez API Route
+      const res = await fetch("/api/request", { cache: "no-store" });
+      const updatedRequests = res.ok ? await res.json() : [];
       setRequests(updatedRequests);
     } catch (err) {
       console.error("Błąd odświeżania zapytań:", err);
