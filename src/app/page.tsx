@@ -35,12 +35,8 @@ interface PageContentData {
 // Funkcja do pobierania i formatowania danych (nadal Server Component)
 async function getContentData(): Promise<PageContentData> {
   try {
-    const baseUrl =
-      process.env.NEXT_PUBLIC_BASE_URL ||
-      (process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : "http://localhost:3000");
-    const res = await fetch(`${baseUrl}/api/content`, { cache: "no-store" });
+    // zamiast budować baseUrl, po prostu:
+    const res = await fetch("/api/content", { cache: "no-store" });
     const formattedData = await res.json();
 
     // Poprawne parsowanie wszystkich pól
