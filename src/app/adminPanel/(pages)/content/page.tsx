@@ -1,7 +1,7 @@
 // app/cms/page.tsx
 import { supabaseFetch } from "@/lib/supabaseFetch";
 import CmsClient from "../../_components/CmsClient"; // We will create this next
-import { Offer } from "../../_actions/contentActions"; // Importuj typ Offer
+import type { Offer } from "@/types/offer"; // Poprawny import typu Offer
 
 // Define the expected structure of fetched data
 export interface CmsContentData {
