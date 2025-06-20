@@ -1,5 +1,5 @@
 // middleware.ts
-import type { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "experimental-edge";
 
