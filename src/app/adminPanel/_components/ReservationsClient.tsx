@@ -11,32 +11,72 @@ import FilterPanel from "./FilterPanel";
 // Typ dla obiektu rezerwacji pobranego z serwera (może zawierać ID)
 type ReservationFromServer = ReservationData & { id: number };
 
-interface ReservationsClientProps {
-  initialReservations: ReservationFromServer[];
-}
+// --- API helpers ---
+type ReservationFilters = {
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+  powerboat?: string;
+  annotation?: string;
+  startDate?: string;
+  endDate?: string;
+};
 
-const fetchReservations = async (sortValue: string, sortDir: string) => {
-  const res = await fetch(
-    `/api/reservation?sortBy=${sortValue}&sortDir=${sortDir}`
-  );
+const buildFilterQuery = (filters: ReservationFilters) => {
+  const params: string[] = [];
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      if (key === "startDate" || key === "endDate") {
+        // Filtruj daty >= lub <=
+        if (key === "startDate") params.push(`${key}=gte.${value}`);
+        if (key === "endDate") params.push(`${key}=lte.${value}`);
+      } else {
+        // Przekazuj czystą wartość, wildcardy i ilike dokleja backend
+        params.push(`${key}=${encodeURIComponent(value)}`);
+      }
+    }
+  });
+  return params.join("&");
+};
+
+const fetchReservations = async (
+  sortValue: string,
+  sortDir: string,
+  filters: ReservationFilters = {}
+) => {
+  const filterQuery = buildFilterQuery(filters);
+  const url =
+    `/api/reservation?sortBy=${sortValue}&sortDir=${sortDir}` +
+    (filterQuery ? `&${filterQuery}` : "");
+  const res = await fetch(url);
   if (!res.ok) throw new Error("Błąd pobierania rezerwacji");
   return await res.json();
 };
 
 const createReservationApi = async (data: ReservationData) => {
+  // Zamień klucze na takie, jakich oczekuje backend
+  const payload = {
+    firstname: data.firstName,
+    lastname: data.lastName,
+    phone: data.phoneNumber,
+    powerboat: data.powerboat,
+    startDate: data.startDate,
+    endDate: data.endDate,
+    annotation: data.annotation,
+  };
   const res = await fetch("/api/reservation", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload),
   });
   return await res.json();
 };
 
 const updateReservationApi = async (id: number, data: ReservationData) => {
   const res = await fetch(`/api/reservation?id=${id}`, {
-    method: "PUT",
+    method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
+    body: JSON.stringify({ id, ...data }),
   });
   return await res.json();
 };
@@ -44,66 +84,35 @@ const updateReservationApi = async (id: number, data: ReservationData) => {
 const deleteReservationApi = async (id: number) => {
   const res = await fetch(`/api/reservation?id=${id}`, {
     method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id }),
   });
   return await res.json();
 };
 
-export default function ReservationsClient({
-  initialReservations,
-}: ReservationsClientProps) {
-  const [reservations, setReservations] =
-    useState<ReservationFromServer[]>(initialReservations);
+export default function ReservationsClient() {
+  const [reservations, setReservations] = useState<ReservationFromServer[]>([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingReservation, setEditingReservation] =
     useState<ReservationFromServer | null>(null);
   const [reservationToDelete, setReservationToDelete] =
     useState<ReservationFromServer | null>(null);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
-  const [isFiltered, setIsFiltered] = useState(false); // Ten stan wydaje się nieużywany w logice filtrowania
+  const [isFiltered, setIsFiltered] = useState(false);
   const [sortValue, setSortValue] = useState("startDate");
   const [sortDesc, setSortDesc] = useState(false);
-
   const [isPending, startTransition] = useTransition();
-  // Upewnij się, że stan isDeleteModalOpen jest poprawnie zarządzany
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [filters, setFilters] = useState<ReservationFilters>({});
 
   useEffect(() => {
-    let processedReservations = [...initialReservations];
-
-    // ... (logika filtrowania i sortowania)
-    processedReservations.sort((a, b) => {
-      let compare = 0;
-      // Konwersja na Date do porównania
-      const dateA = new Date(
-        a[sortValue as keyof ReservationFromServer] as string
-      );
-      const dateB = new Date(
-        b[sortValue as keyof ReservationFromServer] as string
-      );
-
-      if (
-        dateA instanceof Date &&
-        dateB instanceof Date &&
-        !isNaN(dateA.getTime()) &&
-        !isNaN(dateB.getTime())
-      ) {
-        compare = dateA.getTime() - dateB.getTime();
-      } else {
-        // Fallback dla innych typów lub niepoprawnych dat
-        const valA = a[sortValue as keyof ReservationFromServer];
-        const valB = b[sortValue as keyof ReservationFromServer];
-        if (typeof valA === "string" && typeof valB === "string") {
-          compare = valA.localeCompare(valB);
-        } else if (typeof valA === "number" && typeof valB === "number") {
-          compare = valA - valB;
-        } // Dodaj inne typy jeśli potrzebne
+    fetchReservations(sortValue, sortDesc ? "desc" : "asc", filters).then(
+      (data) => {
+        if (Array.isArray(data)) setReservations(data);
+        else setReservations([]);
       }
-
-      return sortDesc ? compare * -1 : compare;
-    });
-
-    setReservations(processedReservations);
-  }, [initialReservations, isFiltered, sortValue, sortDesc]);
+    );
+  }, [sortValue, sortDesc, filters]);
 
   const handleCreate = async (data: ReservationData) => {
     startTransition(async () => {
@@ -190,23 +199,15 @@ export default function ReservationsClient({
     // W przypadku sortowania po stronie klienta, useEffect zareaguje na zmianę sortDesc
   };
 
-  const handleApplyFilters = (filters: string) => {
-    setIsFiltered(true); // Ten stan jest, ale nie wpływa na dane w tym useEffect
+  const handleApplyFilters = (newFilters: ReservationFilters) => {
+    setFilters(newFilters);
+    setIsFiltered(Object.values(newFilters).some((v) => v));
     setShowFilterPanel(false);
-    // Tutaj wywołasz logikę filtrowania po stronie serwera
-    // startTransition(async () => {
-    //    const filteredReservations = await getReservations(sortValue, sortDesc ? 'desc' : 'asc', filters);
-    //    setReservations(filteredReservations);
-    // });
   };
 
   const handleClearFilters = () => {
-    setIsFiltered(false); // Ten stan jest, ale nie wpływa na dane w tym useEffect
-    // Tutaj wywołasz logikę resetowania filtrów po stronie serwera
-    // startTransition(async () => {
-    //    const allReservations = await getReservations(sortValue, sortDesc ? 'desc' : 'asc');
-    //    setReservations(allReservations);
-    // });
+    setFilters({});
+    setIsFiltered(false);
   };
 
   return (
@@ -279,17 +280,24 @@ export default function ReservationsClient({
             </div>
             {/* Filtry */}
             <div>
-              {/* Zmodyfikuj logikę przycisku Filtry/Wyczyść */}
-              {/* Możesz dodać stan `filtersActive` do `ReservationsClient` i ustawiać go w `handleApplyFilters` */}
-              {/* Wtedy ten przycisk mógłby pokazywać "Wyczyść filtry" gdy `filtersActive` jest true */}
-              <button
-                onClick={() => setShowFilterPanel(true)} // Zawsze otwiera panel, logika wyczyszczania będzie w panelu lub po zastosowaniu
-                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
-                disabled={isPending}
-              >
-                {/* Możesz dodać tutaj logikę wyświetlania "Wyczyść filtry" w zależności od aktywowanych filtrów */}
-                Filtry
-              </button>
+              {/* Przycisk "Filtry" lub "Wyczyść filtry" zależnie od isFiltered */}
+              {isFiltered ? (
+                <button
+                  onClick={handleClearFilters}
+                  className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded"
+                  disabled={isPending}
+                >
+                  Wyczyść filtry
+                </button>
+              ) : (
+                <button
+                  onClick={() => setShowFilterPanel(true)}
+                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                  disabled={isPending}
+                >
+                  Filtry
+                </button>
+              )}
             </div>
           </div>
         )}

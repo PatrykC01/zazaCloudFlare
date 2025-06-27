@@ -40,28 +40,31 @@ export async function POST(request: Request) {
     }
     // Możesz dodać walidację formatu daty, telefonu itp.
 
-    // Mapowanie nazw pól z formularza klienta na model Request
-    const requestData = {
-      firstName: body.firstname, // Mapowanie
-      lastName: body.lastname, // Mapowanie
-      phoneNumber: body.phone, // Mapowanie
+    // Mapowanie nazw pól z formularza klienta na model Reservation
+    const reservationData = {
+      firstName: body.firstname,
+      lastName: body.lastname,
+      phoneNumber: body.phone,
       powerboat: body.powerboat,
-      startDate: new Date(body.startDate).toISOString(), // Zapisz jako ISO string
-      endDate: new Date(body.endDate).toISOString(), // Zapisz jako ISO string
+      startDate: new Date(body.startDate).toISOString(),
+      endDate: new Date(body.endDate).toISOString(),
       annotation: body.annotation || "Brak",
-      // lterms nie jest częścią modelu Request, więc go pomijamy
     };
 
-    // Zapisz do Supabase (tabela: request)
-    const [newRequest] = await supabaseFetch<any[]>("request", {
+    // Zapisz do Supabase (tabela: reservation)
+    const [newReservation] = await supabaseFetch<any[]>("reservation", {
       method: "POST",
-      body: requestData,
-      admin: false, // public insert (RLS must allow)
-      headers: { Prefer: "return=representation" }, // zwróć nowy rekord
+      body: reservationData,
+      admin: true, // tylko admin panel może dodać rezerwację bezpośrednio
+      headers: { Prefer: "return=representation" },
     });
 
     return NextResponse.json(
-      { message: "Zapytanie została wysłana pomyślnie!", request: newRequest },
+      {
+        success: true,
+        message: "Rezerwacja została dodana pomyślnie!",
+        reservation: newReservation,
+      },
       { status: 201 }
     );
   } catch (error) {
@@ -76,7 +79,7 @@ export async function POST(request: Request) {
 }
 
 // GET: Pobierz wszystkie rezerwacje (tylko admin)
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const cookieStore = cookies();
     const token = cookieStore.get("admin_session")?.value;
@@ -92,10 +95,48 @@ export async function GET() {
         { status: 403 }
       );
 
+    // Obsługa sortowania po dowolnym polu
+    const { searchParams } = new URL(request.url);
+    const sortBy = searchParams.get("sortBy") || "startDate";
+    const sortDir = searchParams.get("sortDir") || "asc";
+    // Zabezpieczenie przed nieprawidłowymi wartościami
+    const allowedFields = [
+      "firstName",
+      "lastName",
+      "phoneNumber",
+      "powerboat",
+      "startDate",
+      "endDate",
+      "annotation",
+    ];
+    const allowedDirs = ["asc", "desc"];
+    const sortField = allowedFields.includes(sortBy) ? sortBy : "startDate";
+    const sortDirection = allowedDirs.includes(sortDir) ? sortDir : "asc";
+    const orderQuery = `order=${sortField}.${sortDirection}`;
+
+    // Buduj query string z filtrami
+    const filterParams: string[] = [orderQuery];
+    allowedFields.forEach((field) => {
+      const value = searchParams.get(field);
+      if (value) {
+        if (field === "startDate") {
+          filterParams.push(`${field}=gte.${value}`);
+        } else if (field === "endDate") {
+          filterParams.push(`${field}=lte.${value}`);
+        } else {
+          // Only encode the value, not the wildcards
+          const encodedValue = encodeURIComponent(value);
+          filterParams.push(`${field}=ilike.*${encodedValue}*`);
+        }
+      }
+    });
+    const fullQuery = filterParams.join("&");
+    // Debug: log the query string to help diagnose filter issues
+    console.log("Supabase reservation query:", fullQuery);
     const reservations = await supabaseFetch<any[]>("reservation", {
       method: "GET",
       admin: true,
-      query: "order=startDate.asc",
+      query: fullQuery,
     });
     return NextResponse.json(reservations, { status: 200 });
   } catch (error) {
@@ -145,11 +186,11 @@ export async function PATCH(request: Request) {
       method: "PATCH",
       admin: true,
       query: `id=eq.${id}`,
-      body: JSON.stringify({
+      body: {
         ...data,
         startDate: startDateISO,
         endDate: endDateISO,
-      }),
+      },
     });
     return NextResponse.json({ success: true });
   } catch (error) {

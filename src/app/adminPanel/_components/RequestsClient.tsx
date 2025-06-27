@@ -17,18 +17,21 @@ interface RequestModel {
   // Add any other fields returned by Supabase if needed
 }
 
-interface RequestsClientProps {
-  initialRequests: RequestModel[];
-}
-
-export default function RequestsClient({
-  initialRequests,
-}: RequestsClientProps) {
-  const [requests, setRequests] = useState<RequestModel[]>(initialRequests);
+export default function RequestsClient() {
+  const [requests, setRequests] = useState<RequestModel[]>([]);
   const [isPending, startTransition] = useTransition();
-  const [isLoading, setIsLoading] = useState(false); // Do ręcznego odświeżania
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [pendingActionId, setPendingActionId] = useState<number | null>(null); // ID zapytania, na którym trwa akcja
+  const [pendingActionId, setPendingActionId] = useState<number | null>(null);
+
+  // Automatyczne pobieranie requestów po wejściu na zakładkę
+  useEffect(() => {
+    refreshRequests();
+    // Opcjonalnie: refetch przy focusie okna
+    const onFocus = () => refreshRequests();
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, []);
 
   // Funkcja do odświeżania listy zapytań
   const refreshRequests = useCallback(async () => {
