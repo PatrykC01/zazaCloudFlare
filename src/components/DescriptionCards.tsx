@@ -29,7 +29,7 @@ const DescriptionCards = () => {
               <div className="card-body">
                 <h4 className="card-title">Bezpieczeństwo</h4>
                 <p>
-                Przykładamy ogromną wagę do bezpieczeństwa naszych klientów. Wszystkie nasze skutery są regularnie kontrolowane, a każdy klient otrzymuje szczegółowe instrukcje dotyczące obsługi oraz środków bezpieczeństwa.
+                Przykładamy ogromną wagę do bezpieczeństwa naszych klientów. Wszystkie nasze sprzęty są regularnie kontrolowane, a każdy klient otrzymuje szczegółowe instrukcje dotyczące obsługi oraz środków bezpieczeństwa.
 
                 </p>
               </div>

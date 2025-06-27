@@ -45,7 +45,7 @@ const Header: React.FC<HeaderProps> = ({ backgroundImageUrl }) => {
                 <h1>
                   {/* Użyj ref dla Morphext */}
                   <span ref={rotatingTextRef} id="js-rotating">
-                    Wypożyczalnia skuterów wodnych, Zaza__Waters
+                    Wypożyczalnia sprzętu sportowego, Zaza Adventures
                     {/* Dodaj inne frazy oddzielone przecinkiem, jeśli Morphext ma działać */}
                     {/* ,Najlepsze skutery,Niezapomniane wrażenia */}
                   </span>

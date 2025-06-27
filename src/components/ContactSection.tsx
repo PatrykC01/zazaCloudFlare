@@ -27,24 +27,24 @@ const ContactSection: React.FC<ContactSectionProps> = ({
                 >
                   Skontaktuj się z nami
                 </div>
-                <p>
+                <p style={{color:"#fff"}}>
                   Jesteśmy dostępni telefonicznie, mailowo oraz w naszych
                   mediach społecznościowych
                 </p>
                 <ul className="list-unstyled li-space-lg">
                   <li className="address">
                     <i className="fas fa-map-marker-alt"></i>
-                    <span id="FooterLocation">{location}</span>
+                    <span id="FooterLocation" style={{color:"#fff"}}>{location}</span>
                   </li>
                   <li>
                     <i className="fas fa-phone"></i>
-                    <a id="FooterPhone" href={`tel:${phone}`}>
+                    <a id="FooterPhone" style={{color:"#fff"}} href={`tel:${phone}`}>
                       {phone}
                     </a>
                   </li>
                   <li>
                     <i className="fas fa-envelope"></i>
-                    <a id="FooterEmail" href={`mailto:${email}`}>
+                    <a id="FooterEmail" style={{color:"#fff"}} href={`mailto:${email}`}>
                       {email}
                     </a>
                   </li>
@@ -57,7 +57,7 @@ const ContactSection: React.FC<ContactSectionProps> = ({
                   justifyContent: "center",
                 }}
               >
-                <h3 style={{ textAlign: "center", color: "#8ecae6" }}>
+                <h3 style={{ textAlign: "center", color: "#fff" }}>
                   {" "}
                   {/* Upewnij się, że ten kolor pasuje */}
                   Śledź nas w naszych mediach społecznościowych

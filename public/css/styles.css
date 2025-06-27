@@ -41,11 +41,12 @@ Colors:
 - Body text - gray #787976
 - Body text - light gray #dfe5ec
 ******************************************/
-  --sky-blue: hsla(199, 64%, 73%, 1);
+  /*--sky-blue: hsla(199, 64%, 73%, 1);
   --blue-green: hsla(192, 70%, 43%, 1);
   --prussian-blue: hsla(200, 95%, 14%, 1);
   --selective-yellow: hsla(43, 100%, 51%, 1);
   --ut-orange: hsla(32, 100%, 49%, 1);
+  */
 }
 /* CSS HSL */
 
@@ -141,10 +142,11 @@ p {
   opacity: 1;
 }
 
-.lightbox-basic video {
-  width: 65vw;
-  max-height: 65vh;
-  height: auto;
+.lightbox-basic video{
+  
+width: auto;
+height: auto;
+  transform: translate(-50%, -50%);
   background-color: black;
 }
 
@@ -225,16 +227,16 @@ strong {
 }
 
 .section-title {
-  color: #8ecae6;
+  color: #f28a33;
   font: 500 1.8125rem/1.125rem "Montserrat", sans-serif;
 }
 
 .btn-solid-reg {
   display: inline-block;
   padding: 1.5rem;
-  border: 0.125rem solid #007ea7;
+  border: 0.125rem solid #efe1c1;
   border-radius: 0.25rem;
-  background-color: #007ea7;
+  background-color: #0f594b;
   color: #fff;
   font: 700 0.75rem/0 "Montserrat", sans-serif;
   text-decoration: none;
@@ -246,16 +248,16 @@ strong {
 
 .btn-solid-reg:hover {
   background-color: transparent;
-  color: #007ea7;
+  color: #0f594b;
   text-decoration: none;
 }
 
 .btn-solid-lg {
   display: inline-block;
   padding: 1.375rem 2.125rem 1.375rem 2.125rem;
-  border: 0.125rem solid #007ea7;
+  border: 0.125rem solid #0f594b;
   border-radius: 0.25rem;
-  background-color: #007ea7;
+  background-color: #0f594b;
   color: #fff;
   font: 700 0.75rem/0 "Montserrat", sans-serif;
   font-size: 1rem;
@@ -265,7 +267,8 @@ strong {
 
 .btn-solid-lg:hover {
   background-color: transparent;
-  color: #007ea7;
+  color: #f28a33;
+  
   text-decoration: none;
 }
 
@@ -325,7 +328,8 @@ strong {
 
 .form-group {
   position: relative;
-  margin-bottom: 1.25rem;
+  margin-top: 2.25rem;
+  
 }
 
 .form-group.has-error.has-danger {
@@ -479,9 +483,9 @@ input[type="checkbox"] {
   display: inline-block;
   width: 100%;
   height: 3.125rem;
-  border: 0.125rem solid #007ea7;
+  border: 0.125rem solid #efe1c1;
   border-radius: 0.25rem;
-  background-color: #007ea7;
+  background-color: #0f594b;
   color: #fff;
   font: 700 0.75rem/1.75rem "Montserrat", sans-serif;
   cursor: pointer;
@@ -763,11 +767,11 @@ input[type="checkbox"] {
 /*     03. Navigation     */
 /**************************/
 .navbar-custom {
-  padding-top: 0.375rem;
+  padding-top: 0rem;
   padding-bottom: 0.375rem;
   background-color: #113448;
   box-shadow: 0 0.0625rem 0.375rem 0 rgba(0, 0, 0, 0.1);
-  font: 600 0.875rem/0.875rem "Open Sans", sans-serif;
+  font: 600 1.3rem/1rem "Open Sans", sans-serif;
   transition: all 0.2s;
 }
 
@@ -779,7 +783,8 @@ a.navbar-brand.logo-image {
   display: flex;
   align-items: center;
   text-decoration: none;
-  gap: 20px;
+  gap: 5px;
+
 }
 
 .navbar-custom p {
@@ -797,8 +802,8 @@ a.navbar-brand.logo-image {
 }
 
 .navbar-custom.top-nav-collapse img {
-  width: 3rem !important;
-  height: 3rem !important;
+  width: 9rem !important;
+  height: 4rem !important;
 }
 
 .navbar-custom .navbar-brand.logo-text {
@@ -1010,6 +1015,7 @@ a.navbar-brand.logo-image {
   margin-bottom: 2.5rem;
   border: none;
   text-align: center;
+  background: none;
 }
 
 .cards-1 .fa-stack {
@@ -1425,7 +1431,16 @@ a.navbar-brand.logo-image {
 .form-1 {
   padding-top: 6.625rem;
   padding-bottom: 5.625rem;
-  background-color: #153e52;
+
+  /* Krok 1: Ustaw kolor tła (dolna warstwa) */
+  background-color: #0f594b;
+
+  /* Krok 2: Ustaw obrazek tła (górna warstwa) */
+  background-image: url("../zazaimages/patternbeige.svg");
+
+  /* Krok 3: Wybierz tryb mieszania, aby połączyć obie warstwy */
+  /* Zamiast 'normal' wypróbuj 'multiply', 'overlay' lub inny */
+  background-blend-mode: multiply; 
 }
 
 .form-1 .text-container {
@@ -1457,8 +1472,8 @@ a.navbar-brand.logo-image {
 
 .form-1 .form-control-input,
 .form-1 .form-control-select {
-  border: 1px solid #39728f;
-  background-color: #2a5d77;
+  border: 1px solid #efe1c1;
+  background-color: #116152;
   color: #fff;
 }
 
@@ -1531,7 +1546,7 @@ a.navbar-brand.logo-image {
 }
 
 .filter .button-group a.button.is-checked {
-  background-color: #007ea7;
+  background-color: #8eb2df;
   color: #fff;
 }
 
@@ -1821,7 +1836,15 @@ a.navbar-brand.logo-image {
 .form-2 {
   padding-top: 0.625rem;
   padding-bottom: 0.625rem;
-  background-color: #113448;
+  /* Krok 1: Ustaw kolor tła (dolna warstwa) */
+  background-color: #0f594b;
+
+  /* Krok 2: Ustaw obrazek tła (górna warstwa) */
+  background-image: url("../zazaimages/patternbeige.svg");
+
+  /* Krok 3: Wybierz tryb mieszania, aby połączyć obie warstwy */
+  /* Zamiast 'normal' wypróbuj 'multiply', 'overlay' lub inny */
+  background-blend-mode: multiply; 
 }
 
 .form-2 .text-container {
@@ -1869,7 +1892,7 @@ a.navbar-brand.logo-image {
   position: absolute;
   width: 3.25rem;
   height: 3.25rem;
-  background: url("../images/hexagon-green.svg") center center no-repeat;
+  background: url("../images/hexagon_beige.svg") center center no-repeat;
   background-size: 3.25rem 3.25rem;
   transition: all 0.2s ease;
 }
@@ -1881,7 +1904,7 @@ a.navbar-brand.logo-image {
 
 .form-2 .fa-stack-1x {
   font-size: 1.5rem;
-  line-height: 3.25rem;
+  line-height: 3.0rem;
   color: #fff;
   transition: all 0.2s ease;
 }
@@ -1919,7 +1942,7 @@ a.navbar-brand.logo-image {
 .copyright {
   padding-top: 1rem;
   padding-bottom: 0.5rem;
-  background-color: #113448;
+  background-color: #0f594b;
   text-align: center;
 }
 
@@ -1941,13 +1964,13 @@ a.back-to-top {
   width: 2.625rem;
   height: 2.625rem;
   border-radius: 1.875rem;
-  background: #8ecae6 url("../images/up-arrow.png") no-repeat center 47%;
+  background: #f28a33 url("../images/up-arrow.png") no-repeat center 47%;
   background-size: 1.125rem 1.125rem;
   text-indent: -9999px;
 }
 
 a:hover.back-to-top {
-  background-color: #007ea7;
+  background-color: #efe1c1;
 }
 
 /***************************/
@@ -1965,8 +1988,6 @@ a:hover.back-to-top {
   padding-top: 8rem;
   padding-bottom: 5rem;
   text-align: center;
-  background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5)),
-    url("../zazaimages/IMG_2705.PNG") center center / cover no-repeat;
   background-size: cover;
   min-height: 402px;
 }
@@ -2048,13 +2069,12 @@ a:hover.back-to-top {
   }
   /* Navigation */
   .navbar-custom {
-    padding: 1.125rem 1.5rem 2.125rem 2rem;
     box-shadow: none;
     background: transparent;
   }
 
   .navbar-custom .navbar-brand.logo-text {
-    color: #fff;
+    color: #0f594b;
   }
 
   .navbar-custom .navbar-nav {
@@ -2074,20 +2094,20 @@ a:hover.back-to-top {
   .navbar-custom.top-nav-collapse {
     padding: 0.375rem 1.5rem 0.375rem 2rem;
     box-shadow: 0 0.0625rem 0.375rem 0 rgba(0, 0, 0, 0.1);
-    background-color: #113448;
+    background-color: #efe1c1;
   }
 
   .navbar-custom.top-nav-collapse .navbar-brand.logo-text {
-    color: #fff;
+    color: #0f594b;
   }
 
   .navbar-custom.top-nav-collapse .nav-item .nav-link {
-    color: #fff;
+    color: #0f594b;
   }
 
   .navbar-custom.top-nav-collapse .nav-item .nav-link:hover,
   .navbar-custom.top-nav-collapse .nav-item .nav-link.active {
-    color: #8ecae6;
+    color: #f28a33;
   }
 
   .navbar-custom .dropdown-menu {
@@ -2233,39 +2253,45 @@ a:hover.back-to-top {
     font: 700 3.5rem/4rem "Montserrat", sans-serif;
   }
   .navbar-custom .navbar-brand.logo-image img {
-    width: 9rem;
-    height: 9rem;
+    width: 18rem;
+    height: 18rem;
+    padding: 0;
     -webkit-backface-visibility: hidden;
   }
 
   /* Navigation */
   .navbar-custom .social-icons {
     display: block;
-    margin-left: 0.5rem;
+    margin-left: 0.2rem;
+    margin-bottom: 1rem;
   }
 
   .navbar-custom .fa-stack {
-    margin-left: 0.375rem;
+    position: relative;
+    margin-left: 1.675rem;
     font-size: 0.8125rem;
   }
 
   .navbar-custom .fa-stack .hexagon {
-    width: 1.625rem;
-    height: 1.625rem;
+    width: 2.525rem;
+    height: 2.525rem;
     position: absolute;
-    background: url("../images/hexagon-green.svg") center center no-repeat;
-    background-size: 1.625rem 1.625rem;
+    background: url("../images/hexagon-orange.svg") center center no-repeat;
+    background-size: 2.525rem 2.525rem;
     transition: all 0.2s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
   .navbar-custom .fa-stack:hover .hexagon {
     background: url("../images/hexagon-white.svg") center center no-repeat;
-    background-size: 1.625rem 1.625rem;
+    background-size: 2.525rem 2.525rem;
   }
 
   .navbar-custom .fa-stack-1x {
-    font-size: 0.6875rem;
-    line-height: 1.625rem;
+    font-size: 1.3875rem;
+    line-height: 2.225rem;
     color: #fff;
     transition: all 0.2s ease;
   }

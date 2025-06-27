@@ -14,23 +14,12 @@ const Navbar = () => {
       <Link href="/" className="navbar-brand logo-image">
         {/* Użyj next/image dla logo */}
         <Image
-          src="/images/logo.png"
+          src="/images/logo.svg"
           alt="Zaza__Waters Logo"
-          width={50}
-          height={50}
+          width={100}
+          height={100}
         />{" "}
         {/* Dostosuj wymiary */}
-        <p
-          className="brandName"
-          style={{
-            marginBottom: 0,
-            color: "white",
-            display: "inline",
-            marginLeft: "10px",
-          }}
-        >
-          Zaza__Waters
-        </p>
       </Link>
 
       {/* Mobile Menu Toggle Button */}
@@ -86,13 +75,13 @@ const Navbar = () => {
           <span className="fa-stack">
             <a href="https://www.facebook.com/profile.php?id=61561476101080">
               <span className="hexagon"></span>
-              <i className="fab fa-facebook-f fa-stack-1x"></i>
+              <i className="fab fa-facebook-f fa-stack-1x ml-1"></i>
             </a>
           </span>
           <span className="fa-stack">
             <a href="https://www.instagram.com/zaza_adventure">
               <span className="hexagon"></span>
-              <i className="fab fa-instagram fa-stack-1x"></i>
+              <i className="fab fa-instagram fa-stack-1x "style={{marginLeft:"1px"}}></i>
             </a>
           </span>
         </span>

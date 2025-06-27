@@ -255,7 +255,6 @@ const GallerySection: React.FC<GallerySectionProps> = ({ images = [], videos = [
           return (
             <div key={`lightbox-img-${index}`} id={imgId} className="lightbox-basic zoom-anim-dialog mfp-hide my-auto">
               <div className="row">
-                <button title="Close (Esc)" type="button" className="mfp-close x-button">×</button>
                 <div className="col-12 mx-auto">
                   <img className="img-fluid" src={src} alt={`Galeria - Zdjęcie ${index + 1} Lightbox`} loading="lazy"/>
                 </div>
@@ -269,7 +268,6 @@ const GallerySection: React.FC<GallerySectionProps> = ({ images = [], videos = [
           return (
             <div key={`lightbox-vid-${index}`} id={videoId} className="lightbox-basic zoom-anim-dialog mfp-hide my-auto">
               <div className="row">
-                <button title="Close (Esc)" type="button" className="mfp-close x-button">×</button>
                 <div className="col-12 mx-auto">
                   <video controls width="100%" style={{ maxHeight: "80vh" }} preload="auto"> {/* Preload full video here */}
                     <source src={src} type="video/mp4" />
