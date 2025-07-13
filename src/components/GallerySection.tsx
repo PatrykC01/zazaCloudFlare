@@ -87,6 +87,7 @@ const GallerySection: React.FC<GallerySectionProps> = ({
       fixedBgPos: true,
       overflowY: "auto",
       closeBtnInside: true,
+      showCloseBtn: false, // <--- disables the close button
       preloader: false,
       midClick: true,
       removalDelay: 300,
