@@ -280,7 +280,7 @@ const GallerySection: React.FC<GallerySectionProps> = ({
                     height={400}
                     quality={75}
                     loading="lazy"
-                    style={{ width: "100%", height: "auto" }}
+                    style={{ height: "auto" }}
                   />
                 </div>
               </div>
