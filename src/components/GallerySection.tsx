@@ -13,7 +13,10 @@ interface GallerySectionProps {
   videos: string[];
 }
 
-const GallerySection: React.FC<GallerySectionProps> = ({ images = [], videos = [] }) => {
+const GallerySection: React.FC<GallerySectionProps> = ({
+  images = [],
+  videos = [],
+}) => {
   const gridRef = useRef<HTMLDivElement>(null);
   const isotopeInstanceRef = useRef<any>(null);
   const isInitializedRef = useRef<boolean>(false); // Track initialization
@@ -43,7 +46,9 @@ const GallerySection: React.FC<GallerySectionProps> = ({ images = [], videos = [
   // Runs when libraries are loaded OR when images/videos data changes
   useEffect(() => {
     if (!librariesLoaded || !gridRef.current) {
-      console.log("Initialization effect skipped: Libraries not loaded or gridRef not ready.");
+      console.log(
+        "Initialization effect skipped: Libraries not loaded or gridRef not ready."
+      );
       return; // Exit if libraries aren't loaded or ref isn't set
     }
 
@@ -99,14 +104,14 @@ const GallerySection: React.FC<GallerySectionProps> = ({ images = [], videos = [
         },
         close: function () {
           const itemSrc = $((this as any).currItem.el[0]).attr("href");
-           if (itemSrc) {
-                const content = $(itemSrc);
-                const video = content.find("video");
-                if (video.length) {
-                    (video[0] as HTMLVideoElement).pause();
-                    (video[0] as HTMLVideoElement).currentTime = 0;
-                }
-           }
+          if (itemSrc) {
+            const content = $(itemSrc);
+            const video = content.find("video");
+            if (video.length) {
+              (video[0] as HTMLVideoElement).pause();
+              (video[0] as HTMLVideoElement).currentTime = 0;
+            }
+          }
         },
       },
     });
@@ -116,22 +121,21 @@ const GallerySection: React.FC<GallerySectionProps> = ({ images = [], videos = [
       console.log("Cleaning up Isotope and Magnific Popup...");
       if (isotopeInstanceRef.current) {
         // Check if destroy method exists before calling
-        if (typeof isotopeInstanceRef.current.destroy === 'function') {
-            isotopeInstanceRef.current.destroy();
+        if (typeof isotopeInstanceRef.current.destroy === "function") {
+          isotopeInstanceRef.current.destroy();
         }
         isotopeInstanceRef.current = null;
       }
       if ($ && gridRef.current && $.fn.magnificPopup) {
-         // Check if magnificPopup method exists
-         if (typeof $(gridRef.current).magnificPopup === 'function') {
-            $(gridRef.current).magnificPopup("destroy");
-         }
+        // Check if magnificPopup method exists
+        if (typeof $(gridRef.current).magnificPopup === "function") {
+          $(gridRef.current).magnificPopup("destroy");
+        }
       }
       isInitializedRef.current = false; // Reset initialization flag
     };
     // Dependencies: Run when libraries are confirmed loaded or data changes
   }, [librariesLoaded, images, videos, activeFilter]); // Include activeFilter here to ensure initial layout is correct
-
 
   // --- Effect for FILTERING ---
   // Runs only when activeFilter changes *after* initialization
@@ -140,15 +144,13 @@ const GallerySection: React.FC<GallerySectionProps> = ({ images = [], videos = [
       console.log(`Filtering Isotope with: ${activeFilter}`);
       isotopeInstanceRef.current.arrange({ filter: activeFilter });
     }
-     // No cleanup needed here, main cleanup handles instance destruction
+    // No cleanup needed here, main cleanup handles instance destruction
   }, [activeFilter]); // Dependency ONLY on activeFilter
-
 
   // Handler function for changing the filter
   const handleFilterChange = useCallback((filterValue: string) => {
     setActiveFilter(filterValue);
   }, []); // useCallback ensures the function identity is stable
-
 
   // --- Render JSX ---
   return (
@@ -178,7 +180,7 @@ const GallerySection: React.FC<GallerySectionProps> = ({ images = [], videos = [
                 WSZYSTKO
               </a>
               <a
-                 className={`border-2 rounded-md p-2 m-2 button transition-colors duration-300 ease-in-out ${
+                className={`border-2 rounded-md p-2 m-2 button transition-colors duration-300 ease-in-out ${
                   activeFilter === ".pics"
                     ? "bg-cyan-800 border-cyan-800 text-amber-50 is-checked"
                     : "bg-transparent border-cyan-800 text-cyan-800"
@@ -188,7 +190,7 @@ const GallerySection: React.FC<GallerySectionProps> = ({ images = [], videos = [
                 ZDJĘCIA
               </a>
               <a
-                 className={`border-2 rounded-md p-2 m-2 button transition-colors duration-300 ease-in-out ${
+                className={`border-2 rounded-md p-2 m-2 button transition-colors duration-300 ease-in-out ${
                   activeFilter === ".vids"
                     ? "bg-cyan-800 border-cyan-800 text-amber-50 is-checked"
                     : "bg-transparent border-cyan-800 text-cyan-800"
@@ -198,7 +200,6 @@ const GallerySection: React.FC<GallerySectionProps> = ({ images = [], videos = [
                 WIDEO
               </a>
             </div>
-
             {/* Isotope Grid Container */}
             <div ref={gridRef} id="GalleryContainer" className="grid">
               {/* Render Images */}
@@ -212,7 +213,11 @@ const GallerySection: React.FC<GallerySectionProps> = ({ images = [], videos = [
                       <img
                         src={src}
                         alt={`Galeria - Zdjęcie ${index + 1}`}
-                        style={{ display: 'block', maxWidth: "100%", height: "auto" }} // display:block helps prevent extra space
+                        style={{
+                          display: "block",
+                          maxWidth: "100%",
+                          height: "auto",
+                        }} // display:block helps prevent extra space
                         loading="lazy" // Add lazy loading
                       />
                     </a>
@@ -233,7 +238,11 @@ const GallerySection: React.FC<GallerySectionProps> = ({ images = [], videos = [
                         loop
                         playsInline // Important for mobile
                         preload="metadata" // Load only metadata initially
-                        style={{ display: 'block', maxWidth: "100%", height: "auto" }}
+                        style={{
+                          display: "block",
+                          maxWidth: "100%",
+                          height: "auto",
+                        }}
                       >
                         <source src={src} type="video/mp4" />
                         Your browser does not support the video tag.
@@ -242,21 +251,37 @@ const GallerySection: React.FC<GallerySectionProps> = ({ images = [], videos = [
                   </div>
                 );
               })}
-            </div> {/* end of grid */}
-          </div> {/* end of col */}
-        </div> {/* end of row */}
-      </div> {/* end of container */}
-
+            </div>{" "}
+            {/* end of grid */}
+          </div>{" "}
+          {/* end of col */}
+        </div>{" "}
+        {/* end of row */}
+      </div>{" "}
+      {/* end of container */}
       {/* Lightbox Container (Hidden) */}
       <div id="lightboxesContainer" style={{ display: "none" }}>
         {/* Image Lightboxes */}
         {images.map((src, index) => {
           const imgId = `el-${index + 1}`;
           return (
-            <div key={`lightbox-img-${index}`} id={imgId} className="lightbox-basic zoom-anim-dialog mfp-hide my-auto">
+            <div
+              key={`lightbox-img-${index}`}
+              id={imgId}
+              className="lightbox-basic zoom-anim-dialog mfp-hide my-auto"
+            >
               <div className="row">
                 <div className="col-12 mx-auto">
-                  <img className="img-fluid" src={src} alt={`Galeria - Zdjęcie ${index + 1} Lightbox`} loading="lazy"/>
+                  <Image
+                    className="img-fluid"
+                    src={src}
+                    alt={`Galeria - Zdjęcie ${index + 1} Lightbox`}
+                    width={600}
+                    height={400}
+                    quality={75}
+                    loading="lazy"
+                    style={{ width: "100%", height: "auto" }}
+                  />
                 </div>
               </div>
             </div>
@@ -266,10 +291,21 @@ const GallerySection: React.FC<GallerySectionProps> = ({ images = [], videos = [
         {videos.map((src, index) => {
           const videoId = `elV-${index + 1}`;
           return (
-            <div key={`lightbox-vid-${index}`} id={videoId} className="lightbox-basic zoom-anim-dialog mfp-hide my-auto">
+            <div
+              key={`lightbox-vid-${index}`}
+              id={videoId}
+              className="lightbox-basic zoom-anim-dialog mfp-hide my-auto"
+            >
               <div className="row">
                 <div className="col-12 mx-auto">
-                  <video controls width="100%" style={{ maxHeight: "80vh" }} preload="auto"> {/* Preload full video here */}
+                  <video
+                    controls
+                    width="100%"
+                    style={{ maxHeight: "80vh" }}
+                    preload="auto"
+                  >
+                    {" "}
+                    {/* Preload full video here */}
                     <source src={src} type="video/mp4" />
                     Your browser does not support the video tag.
                   </video>
@@ -278,7 +314,8 @@ const GallerySection: React.FC<GallerySectionProps> = ({ images = [], videos = [
             </div>
           );
         })}
-      </div> {/* end of lightboxesContainer */}
+      </div>{" "}
+      {/* end of lightboxesContainer */}
     </div> /* end of filter */
   );
 };

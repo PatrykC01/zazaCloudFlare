@@ -12,6 +12,7 @@ import { CmsContentData } from "../(pages)/content/page"; // Import the data str
 import { useRouter } from "next/navigation";
 import type { Offer } from "@/types/offer";
 import LogoutButton from "./LogoutButton";
+import Image from "next/image";
 
 // --- UI Components (Replace with your actual UI library like Shadcn/ui or use basic HTML) ---
 const Input = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
@@ -419,7 +420,6 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
   return (
     <div className="container mx-auto p-4">
       {/* --- Górny pasek nawigacji z zakładkami i wylogowaniem --- */}
-    
       {/* --- Reszta CMS --- */}
       {/* --- Banner Section --- */}
       {renderSection(
@@ -433,10 +433,14 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
               placeholder="Image URL/Path"
             />
           ) : (
-            <img
-              src={content.HeaderIMG || "/placeholder.jpg"}
+            <Image
+              src={content.HeaderIMG || "/placeholder.webp"}
               alt="Banner"
+              width={1200}
+              height={400}
               className="cmsImg mw-75 mx-auto max-h-60 object-contain CmsBannerImg"
+              loading="lazy"
+              style={{ width: "100%", height: "auto" }}
             />
           )
         // No dedicated form renderer needed here if using the default submit logic
@@ -455,7 +459,15 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
             </div>
             <div className="md:w-1/2">
               {content.AboutIMG ? (
-                <img src={content.AboutIMG} className="CmsAboutImg" />
+                <Image
+                  src={content.AboutIMG}
+                  alt="Zdjęcie o nas"
+                  width={600}
+                  height={400}
+                  className="CmsAboutImg"
+                  loading="lazy"
+                  style={{ width: "100%", height: "auto" }}
+                />
               ) : (
                 <p className="text-gray-500">Brak obrazka.</p>
               )}
@@ -494,10 +506,14 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           {(content.Offers || []).map((offer, index) => (
             <div key={index} className="border p-3 relative bg-white rounded">
-              <img
-                src={offer.img || "/placeholder.jpg"}
+              <Image
+                src={offer.img || "/placeholder.webp"}
                 alt={offer.title}
+                width={400}
+                height={200}
                 className="w-full h-32 object-contain mb-2 CmsOfferImg"
+                loading="lazy"
+                style={{ width: "100%", height: "auto" }}
               />
               <h4 className="font-semibold text-center mb-1">{offer.title}</h4>
               <p className="text-sm text-gray-600 mb-2">{offer.description}</p>
@@ -597,12 +613,15 @@ export default function CmsClient({ initialContent }: CmsClientProps) {
         <div className="CmsgalleryContainer cms-gallery">
           {(content.GalleryImages || []).map((img, index) => (
             <div key={`img-${index}`} className="CmsgalleryImg">
-              {" "}
               {/* Klasy w-24, h-24, relative są teraz w CSS */}
-              <img
-                src={img || "/placeholder.jpg"}
+              <Image
+                src={img || "/placeholder.webp"}
                 alt={`Gallery Image ${index + 1}`}
-                className="rounded" /* Klasy pozycjonowania, rozmiaru i object-fit są w CSS, zostawiamy tylko rounded */
+                width={300}
+                height={200}
+                className="rounded"
+                loading="lazy"
+                style={{ width: "100%", height: "auto" }}
               />
               <DangerButton
                 onClick={() => handleDeleteMedia("IMG", img)}

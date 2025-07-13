@@ -1,9 +1,9 @@
 // src/components/OffersSection.tsx
-'use client'; // Nadal potrzebne, jeśli np. używasz Link lub planujesz interakcje
+"use client"; // Nadal potrzebne, jeśli np. używasz Link lub planujesz interakcje
 
-import React from 'react';
-import Link from 'next/link';
-import Image from 'next/image'; // Jeśli chcesz używać next/image
+import React from "react";
+import Link from "next/link";
+import Image from "next/image"; // Jeśli chcesz używać next/image
 
 // Usunięto: useEffect, useRef, declare var Swiper
 
@@ -38,12 +38,22 @@ const OffersSection: React.FC<OffersSectionProps> = ({ offers }) => {
             {/* Mapowanie ofert bezpośrednio w kontenerze flex */}
             {offers.map((offer, index) => (
               // Usunięto 'swiper-slide', możesz dodać klasy dla szerokości karty np. max-w-sm
-              <div key={index} className="card max-w-sm m-5"> {/* Przykład: dodano max-w-sm */}
+              <div key={index} className="card max-w-sm m-5">
+                {" "}
+                {/* Przykład: dodano max-w-sm */}
                 {/* Struktura karty bez zmian */}
                 <div className="card-image">
-                  {/* Użyj img lub Image */}
-                   <img className="imgFluid" src={offer.img} alt={offer.title} />
-                  {/* <Image className="imgFluid" src={offer.img} alt={offer.title} width={400} height={300} style={{ width: '100%', height: 'auto' }} /> */}
+                  {/* Optymalizacja: next/image */}
+                  <Image
+                    className="imgFluid"
+                    src={offer.img}
+                    alt={offer.title}
+                    width={400}
+                    height={300}
+                    quality={75}
+                    loading="lazy"
+                    style={{ width: "100%", height: "auto" }}
+                  />
                 </div>
                 <div className="card-body">
                   <h3 className="card-title">{offer.title}</h3>
@@ -51,7 +61,8 @@ const OffersSection: React.FC<OffersSectionProps> = ({ offers }) => {
                   <ul className="list-unstyled li-space-lg">
                     {offer.features.map((feature, fIndex) => (
                       <li key={fIndex} className="media">
-                        <i className="fas fa-square"></i> {/* Upewnij się, że Font Awesome Solid działa */}
+                        <i className="fas fa-square"></i>{" "}
+                        {/* Upewnij się, że Font Awesome Solid działa */}
                         <div className="media-body">{feature}</div>
                       </li>
                     ))}
@@ -61,18 +72,27 @@ const OffersSection: React.FC<OffersSectionProps> = ({ offers }) => {
                   <p className="price">
                     Już od <span>{offer.price}</span>
                   </p>
-                  <Link href={`/oferta1`} className="btn-solid-reg page-scroll mr-2">
+                  <Link
+                    href={`/oferta1`}
+                    className="btn-solid-reg page-scroll mr-2"
+                  >
                     SPRAWDŹ OFERTĘ
                   </Link>
-                  <a href="#reservation" className="btn-solid-reg page-scroll reservation-btn">
+                  <a
+                    href="#reservation"
+                    className="btn-solid-reg page-scroll reservation-btn"
+                  >
                     ZAREZERWUJ
                   </a>
                 </div>
               </div>
             ))}
-          </div> {/* end of col / flex container */}
-        </div> {/* end of row */}
-      </div> {/* end of container */}
+          </div>{" "}
+          {/* end of col / flex container */}
+        </div>{" "}
+        {/* end of row */}
+      </div>{" "}
+      {/* end of container */}
     </div>
   );
 };

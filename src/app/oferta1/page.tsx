@@ -1,48 +1,53 @@
-'use client'
+"use client";
 
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import Image from "next/image";
 
 export default function Oferta() {
   const [data, setData] = useState({
-    Map: '',
-    NaDobyBezPaliwa: '',
-    NaDobyZPaliwem: '',
-    PrzejazdSkuterem: '',
-    PrzejazdPontonem: '',
+    Map: "",
+    NaDobyBezPaliwa: "",
+    NaDobyZPaliwem: "",
+    PrzejazdSkuterem: "",
+    PrzejazdPontonem: "",
   });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/api/content');
+        const response = await fetch("/api/content");
         const jsonData = await response.json();
         setData(jsonData);
       } catch (error) {
-        console.error('Error fetching content:', error);
+        console.error("Error fetching content:", error);
       }
     };
 
     fetchData();
   }, []);
 
- const parsePrices = (priceString: string | undefined | null) => {
-  if (!priceString) return [];
-  return priceString.split(',');
-};
+  const parsePrices = (priceString: string | undefined | null) => {
+    if (!priceString) return [];
+    return priceString.split(",");
+  };
   const naDobyBezPaliwaPrices = parsePrices(data.NaDobyBezPaliwa);
   const naDobyZPaliwemPrices = parsePrices(data.NaDobyZPaliwem);
   const przejazdSkuteremPrices = parsePrices(data.PrzejazdSkuterem);
 
   return (
     <div>
-
       {/* Navbar */}
       <nav className="navbar navbar-expand-md navbar-dark navbar-custom fixed-top">
         <Link className="navbar-brand logo-image" href="/">
-          <img src="/images/logo.png" alt="alternative" />
-          <p className="brandName" style={{ marginBottom: 0, color: 'white' }}>
+          <Image
+            src="/images/logo.png"
+            alt="alternative"
+            width={120}
+            height={60}
+            priority
+          />
+          <p className="brandName" style={{ marginBottom: 0, color: "white" }}>
             Zaza__Waters
           </p>
         </Link>
@@ -125,9 +130,7 @@ export default function Oferta() {
       <div className="ex-basic-1">
         <div className="container">
           <div className="row">
-            <div className="col-lg-12">
-              {/* end of breadcrumbs */}
-            </div>
+            <div className="col-lg-12">{/* end of breadcrumbs */}</div>
           </div>
         </div>
       </div>
@@ -150,7 +153,11 @@ export default function Oferta() {
               <img
                 className="img-fluid"
                 src="/zazaimages/IMG_2362.jpg"
-                style={{ borderRadius: '5px', aspectRatio: '1/1', width: '85%' }}
+                style={{
+                  borderRadius: "5px",
+                  aspectRatio: "1/1",
+                  width: "85%",
+                }}
                 alt="alternative"
               />
             </div>
@@ -170,27 +177,29 @@ export default function Oferta() {
               <tbody>
                 <tr>
                   <td>0,5 dnia (6 godzin)</td>
-                  <td>{naDobyBezPaliwaPrices[0] || ''}</td>
+                  <td>{naDobyBezPaliwaPrices[0] || ""}</td>
                 </tr>
                 <tr>
                   <td>1 doba</td>
-                  <td>{naDobyBezPaliwaPrices[1] || ''}</td>
+                  <td>{naDobyBezPaliwaPrices[1] || ""}</td>
                 </tr>
                 <tr>
                   <td>2 dni</td>
-                  <td>{naDobyBezPaliwaPrices[2] || ''}</td>
+                  <td>{naDobyBezPaliwaPrices[2] || ""}</td>
                 </tr>
                 <tr>
                   <td>3 dni</td>
-                  <td>{naDobyBezPaliwaPrices[3] || ''}</td>
+                  <td>{naDobyBezPaliwaPrices[3] || ""}</td>
                 </tr>
                 <tr>
                   <td>Dłuższy okres</td>
-                  <td>{naDobyBezPaliwaPrices[4] || ''}</td>
+                  <td>{naDobyBezPaliwaPrices[4] || ""}</td>
                 </tr>
               </tbody>
             </table>
-            <p>Cena dodatków również do ustalenia. Podane ceny do negocjacji.</p>
+            <p>
+              Cena dodatków również do ustalenia. Podane ceny do negocjacji.
+            </p>
           </div>
           <div className="col-md-6">
             <h2 className="oferta">Motogodziny i kaucja</h2>
@@ -218,17 +227,17 @@ export default function Oferta() {
               <tbody>
                 <tr>
                   <td>3 godziny</td>
-                  <td>{naDobyZPaliwemPrices[0] || ''}</td>
+                  <td>{naDobyZPaliwemPrices[0] || ""}</td>
                   <td>1</td>
                 </tr>
                 <tr>
                   <td>6 godzin</td>
-                  <td>{naDobyZPaliwemPrices[1] || ''}</td>
+                  <td>{naDobyZPaliwemPrices[1] || ""}</td>
                   <td>2</td>
                 </tr>
                 <tr>
                   <td>12 godzin</td>
-                  <td>{naDobyZPaliwemPrices[2] || ''}</td>
+                  <td>{naDobyZPaliwemPrices[2] || ""}</td>
                   <td>3</td>
                 </tr>
               </tbody>
@@ -246,17 +255,17 @@ export default function Oferta() {
               <tbody>
                 <tr>
                   <td>3 godziny</td>
-                  <td>{naDobyZPaliwemPrices[3] || ''}</td>
+                  <td>{naDobyZPaliwemPrices[3] || ""}</td>
                   <td>1</td>
                 </tr>
                 <tr>
                   <td>6 godzin</td>
-                  <td>{naDobyZPaliwemPrices[4] || ''}</td>
+                  <td>{naDobyZPaliwemPrices[4] || ""}</td>
                   <td>2</td>
                 </tr>
                 <tr>
                   <td>12 godzin</td>
-                  <td>{naDobyZPaliwemPrices[5] || ''}</td>
+                  <td>{naDobyZPaliwemPrices[5] || ""}</td>
                   <td>3</td>
                 </tr>
               </tbody>
@@ -274,7 +283,9 @@ export default function Oferta() {
             <p>przyczepka (przy wynajmie na całą dobę)</p>
             <p>kamizelki ratunkowe (różne rozmiary)</p>
             <p>bojka do kotwiczenia</p>
-            <h4 className="oferta">Dodatkowo możliwość wynajmu wraz ze skuterem:</h4>
+            <h4 className="oferta">
+              Dodatkowo możliwość wynajmu wraz ze skuterem:
+            </h4>
             <p>kanapa do holowania dwóch osób</p>
             <p>
               lodówka z wkładami chłodzącymi oraz uzupełniona napojami (do
@@ -299,15 +310,15 @@ export default function Oferta() {
               <tbody>
                 <tr>
                   <td>10 minut</td>
-                  <td>{przejazdSkuteremPrices[0] || ''}</td>
+                  <td>{przejazdSkuteremPrices[0] || ""}</td>
                 </tr>
                 <tr>
                   <td>30 minut</td>
-                  <td>{przejazdSkuteremPrices[1] || ''}</td>
+                  <td>{przejazdSkuteremPrices[1] || ""}</td>
                 </tr>
                 <tr>
                   <td>1 godzina</td>
-                  <td>{przejazdSkuteremPrices[2] || ''}</td>
+                  <td>{przejazdSkuteremPrices[2] || ""}</td>
                 </tr>
               </tbody>
             </table>
@@ -323,7 +334,7 @@ export default function Oferta() {
               <tbody>
                 <tr>
                   <td>1 przejazd (10 minut)</td>
-                  <td id="PrzejazdPontonem">{data.PrzejazdPontonem || ''}</td>
+                  <td id="PrzejazdPontonem">{data.PrzejazdPontonem || ""}</td>
                 </tr>
               </tbody>
             </table>
@@ -361,7 +372,7 @@ export default function Oferta() {
                 <div className="footer-dane">
                   <div
                     className="section-title"
-                    style={{ marginBottom: '2.5rem', lineHeight: '2rem' }}
+                    style={{ marginBottom: "2.5rem", lineHeight: "2rem" }}
                   >
                     Skontaktuj się z nami
                   </div>
@@ -388,17 +399,17 @@ export default function Oferta() {
                 </div>
                 <div
                   style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
                   }}
                 >
-                  <h3 style={{ textAlign: 'center' }}>
+                  <h3 style={{ textAlign: "center" }}>
                     Śledź nas w naszych mediach społecznościowych
                   </h3>
                   <div
                     className="socials"
-                    style={{ display: 'flex', justifyContent: 'center' }}
+                    style={{ display: "flex", justifyContent: "center" }}
                   >
                     <span className="fa-stack">
                       <a href="https://www.facebook.com/profile.php?id=61561476101080">
