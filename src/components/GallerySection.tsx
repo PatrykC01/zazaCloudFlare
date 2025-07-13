@@ -290,6 +290,10 @@ const GallerySection: React.FC<GallerySectionProps> = ({
         {/* Video Lightboxes */}
         {videos.map((src, index) => {
           const videoId = `elV-${index + 1}`;
+          // Wyciągnij nazwę pliku bez rozszerzenia do miniatury
+          const fileName =
+            src.split("/").pop()?.split(".")[0] || `vid${index + 1}`;
+          const poster = `/zazaimages/thumbs/${fileName}.jpg`;
           return (
             <div
               key={`lightbox-vid-${index}`}
@@ -302,10 +306,9 @@ const GallerySection: React.FC<GallerySectionProps> = ({
                     controls
                     width="100%"
                     style={{ maxHeight: "80vh" }}
-                    preload="auto"
+                    preload="none"
+                    poster={poster}
                   >
-                    {" "}
-                    {/* Preload full video here */}
                     <source src={src} type="video/mp4" />
                     Your browser does not support the video tag.
                   </video>
