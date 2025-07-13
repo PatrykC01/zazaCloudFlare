@@ -209,16 +209,19 @@ const GallerySection: React.FC<GallerySectionProps> = ({
                   <div key={`img-${index}`} className="element-item pics">
                     <a className="popup-with-move-anim" href={`#${imgId}`}>
                       <div className="element-item-overlay"></div>
-                      {/* Using standard img for simplicity with Isotope/Magnific */}
-                      <img
+                      <Image
                         src={src}
                         alt={`Galeria - Zdjęcie ${index + 1}`}
+                        width={400}
+                        height={533}
+                        quality={60}
+                        loading="lazy"
+                        sizes="(max-width: 600px) 100vw, 400px"
                         style={{
                           display: "block",
                           maxWidth: "100%",
                           height: "auto",
-                        }} // display:block helps prevent extra space
-                        loading="lazy" // Add lazy loading
+                        }}
                       />
                     </a>
                   </div>
@@ -228,25 +231,25 @@ const GallerySection: React.FC<GallerySectionProps> = ({
               {/* Render Videos */}
               {videos.map((src, index) => {
                 const videoId = `elV-${index + 1}`;
+                const fileName =
+                  src.split("/").pop()?.split(".")[0] || `vid${index + 1}`;
+                const poster = `/zazaimages/thumbs/${fileName}.jpg`;
                 return (
                   <div key={`vid-${index}`} className="element-item vids">
                     <a className="popup-with-move-anim" href={`#${videoId}`}>
                       <div className="element-item-overlay"></div>
-                      {/* Thumbnail video */}
-                      <video
-                        muted // Muted is often required for any kind of autoplay/looping
-                        loop
-                        playsInline // Important for mobile
-                        preload="metadata" // Load only metadata initially
+                      <img
+                        src={poster}
+                        alt={`Miniatura wideo ${index + 1}`}
+                        width={400}
+                        height={225}
+                        loading="lazy"
                         style={{
                           display: "block",
                           maxWidth: "100%",
                           height: "auto",
                         }}
-                      >
-                        <source src={src} type="video/mp4" />
-                        Your browser does not support the video tag.
-                      </video>
+                      />
                     </a>
                   </div>
                 );
@@ -276,10 +279,11 @@ const GallerySection: React.FC<GallerySectionProps> = ({
                     className="img-fluid"
                     src={src}
                     alt={`Galeria - Zdjęcie ${index + 1} Lightbox`}
-                    width={600}
-                    height={400}
+                    width={800}
+                    height={1066}
                     quality={75}
                     loading="lazy"
+                    sizes="(max-width: 800px) 100vw, 800px"
                     style={{ height: "auto" }}
                   />
                 </div>
@@ -290,7 +294,6 @@ const GallerySection: React.FC<GallerySectionProps> = ({
         {/* Video Lightboxes */}
         {videos.map((src, index) => {
           const videoId = `elV-${index + 1}`;
-          // Wyciągnij nazwę pliku bez rozszerzenia do miniatury
           const fileName =
             src.split("/").pop()?.split(".")[0] || `vid${index + 1}`;
           const poster = `/zazaimages/thumbs/${fileName}.jpg`;
@@ -310,6 +313,11 @@ const GallerySection: React.FC<GallerySectionProps> = ({
                     poster={poster}
                   >
                     <source src={src} type="video/mp4" />
+                    <track
+                      kind="captions"
+                      srcLang="pl"
+                      label="Polskie napisy"
+                    />
                     Your browser does not support the video tag.
                   </video>
                 </div>
