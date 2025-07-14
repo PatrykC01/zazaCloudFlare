@@ -8,6 +8,14 @@ import Image from "next/image"; // Import Image
 declare var Isotope: any;
 declare var $: any; // If using jQuery
 
+// Extend the Window interface to include stopAllVideos
+declare global {
+  interface Window {
+    stopAllVideos?: () => void;
+    _scrollYBeforePopup?: number;
+  }
+}
+
 interface GallerySectionProps {
   images: string[];
   videos: string[];
@@ -25,6 +33,10 @@ const GallerySection: React.FC<GallerySectionProps> = ({
       video.currentTime = 0;
     });
   }, []);
+  // Ustaw globalnie natychmiast po definicji
+  if (typeof window !== "undefined") {
+    window.stopAllVideos = stopAllVideos;
+  }
 
   const scrollPositionRef = useRef<number>(0);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -106,6 +118,7 @@ const GallerySection: React.FC<GallerySectionProps> = ({
       mainClass: "my-mfp-slide-bottom",
       callbacks: {
         open: function () {
+          console.log("[MagnificPopup] open callback");
           // Zapamiętaj scroll przed popupem
           if (typeof window !== "undefined") {
             (window as any)._scrollYBeforePopup = window.scrollY;
@@ -119,24 +132,23 @@ const GallerySection: React.FC<GallerySectionProps> = ({
               const vid = video[0] as HTMLVideoElement;
               vid.pause();
               vid.currentTime = 0;
-              vid.load(); // Prostsze rozwiązanie zamiast klonowania źródeł
+              vid.load();
             }
           }
         },
         beforeClose: function () {
-          // Zatrzymaj wideo przed zamknięciem
-          const itemSrc = $((this as any).currItem.el[0]).attr("href");
-          if (itemSrc) {
-            const content = $(itemSrc);
-            const video = content.find("video");
-            if (video.length) {
-              const vid = video[0] as HTMLVideoElement;
-              vid.pause();
-              vid.currentTime = 0;
-            }
+          console.log("[MagnificPopup] beforeClose callback");
+          if (typeof window !== "undefined") {
+            const stopAll = window.stopAllVideos;
+            if (typeof stopAll === "function") stopAll();
           }
         },
         close: function () {
+          console.log("[MagnificPopup] close callback");
+          if (typeof window !== "undefined") {
+            const stopAll = window.stopAllVideos;
+            if (typeof stopAll === "function") stopAll();
+          }
           // Przywróć scroll po zamknięciu popupu
           if (
             typeof window !== "undefined" &&
@@ -144,6 +156,13 @@ const GallerySection: React.FC<GallerySectionProps> = ({
           ) {
             window.scrollTo({ top: (window as any)._scrollYBeforePopup });
             (window as any)._scrollYBeforePopup = undefined;
+          }
+        },
+        afterClose: function () {
+          console.log("[MagnificPopup] afterClose callback");
+          if (typeof window !== "undefined") {
+            const stopAll = window.stopAllVideos;
+            if (typeof stopAll === "function") stopAll();
           }
         },
       },
