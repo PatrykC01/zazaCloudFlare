@@ -17,6 +17,16 @@ const GallerySection: React.FC<GallerySectionProps> = ({
   images = [],
   videos = [],
 }) => {
+  // --- Helper: Stop all videos on the page ---
+  const stopAllVideos = useCallback(() => {
+    const allVideos = document.querySelectorAll("video");
+    allVideos.forEach((video: HTMLVideoElement) => {
+      video.pause();
+      video.currentTime = 0;
+    });
+  }, []);
+
+  const scrollPositionRef = useRef<number>(0);
   const gridRef = useRef<HTMLDivElement>(null);
   const isotopeInstanceRef = useRef<any>(null);
   const isInitializedRef = useRef<boolean>(false); // Track initialization
@@ -83,35 +93,57 @@ const GallerySection: React.FC<GallerySectionProps> = ({
     $(gridRef.current).magnificPopup({
       delegate: "a.popup-with-move-anim",
       type: "inline",
-      fixedContentPos: false,
+      fixedContentPos: true,
       fixedBgPos: true,
       overflowY: "auto",
-      closeBtnInside: true,
-      showCloseBtn: false, // <--- disables the close button
+      closeBtnInside: false,
+      showCloseBtn: false,
+      closeOnContentClick: false, // Nie zamykaj przy kliknięciu na zawartość
+      closeOnBgClick: true, // Zamykaj przy kliknięciu na tło
       preloader: false,
       midClick: true,
       removalDelay: 300,
       mainClass: "my-mfp-slide-bottom",
       callbacks: {
         open: function () {
-          // Using 'any' as 'this' context from Magnific Popup isn't easily typed
-          const itemSrc = $((this as any).currItem.el[0]).attr("href");
-          if (itemSrc) {
-            const content = $(itemSrc);
-            const video = content.find("video");
-            // Optional: attempt to play video (may be blocked by browser)
-            // if (video.length) video[0].play().catch(e => console.error("Video autoplay failed:", e));
+          // Zapamiętaj scroll przed popupem
+          if (typeof window !== "undefined") {
+            (window as any)._scrollYBeforePopup = window.scrollY;
           }
-        },
-        close: function () {
+          // Zawsze resetuj i zatrzymaj wideo przy otwarciu lightboxa
           const itemSrc = $((this as any).currItem.el[0]).attr("href");
           if (itemSrc) {
             const content = $(itemSrc);
             const video = content.find("video");
             if (video.length) {
-              (video[0] as HTMLVideoElement).pause();
-              (video[0] as HTMLVideoElement).currentTime = 0;
+              const vid = video[0] as HTMLVideoElement;
+              vid.pause();
+              vid.currentTime = 0;
+              vid.load(); // Prostsze rozwiązanie zamiast klonowania źródeł
             }
+          }
+        },
+        beforeClose: function () {
+          // Zatrzymaj wideo przed zamknięciem
+          const itemSrc = $((this as any).currItem.el[0]).attr("href");
+          if (itemSrc) {
+            const content = $(itemSrc);
+            const video = content.find("video");
+            if (video.length) {
+              const vid = video[0] as HTMLVideoElement;
+              vid.pause();
+              vid.currentTime = 0;
+            }
+          }
+        },
+        close: function () {
+          // Przywróć scroll po zamknięciu popupu
+          if (
+            typeof window !== "undefined" &&
+            typeof (window as any)._scrollYBeforePopup === "number"
+          ) {
+            window.scrollTo({ top: (window as any)._scrollYBeforePopup });
+            (window as any)._scrollYBeforePopup = undefined;
           }
         },
       },
@@ -215,7 +247,7 @@ const GallerySection: React.FC<GallerySectionProps> = ({
                         alt={`Galeria - Zdjęcie ${index + 1}`}
                         width={400}
                         height={533}
-                        quality={60}
+                        quality={10}
                         loading="lazy"
                         sizes="(max-width: 600px) 100vw, 400px"
                         style={{

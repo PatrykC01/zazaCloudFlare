@@ -1103,6 +1103,15 @@ a.navbar-brand.logo-image {
   object-fit: cover;
 }
 
+/*
+ * Poprawka dla wysokich obrazków w lightboxie (Magnific Popup)
+ */
+.lightbox-basic .img-fluid {
+  max-height: 90vh; /* Ogranicza wysokość obrazu do 90% wysokości okna przeglądarki */
+  width: auto;      /* Pozwala szerokości dostosować się automatycznie, by zachować proporcje */
+  margin: 0 auto;   /* Dodatkowe wyśrodkowanie w poziomie, jeśli obrazek jest węższy niż kontener */
+}
+
 .cards-2 .card-image img {
   border-top-left-radius: 0.375rem;
   border-top-right-radius: 0.375rem;
@@ -1660,6 +1669,10 @@ a.navbar-brand.logo-image {
 .lightbox-basic .btn-outline-reg {
   margin-right: 0.375rem;
   margin-bottom: 1rem;
+}
+
+.mfp-close {
+  display: none !important;
 }
 
 .lightbox-basic a.mfp-close.as-button {
